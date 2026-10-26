@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <title>Simulador de bases de datos · tecnoLSM</title>
+  <meta name="description" content="Aprende SQL practicando: simulador interactivo de bases de datos con ejemplos guiados y modo examen.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <script>
+    /* Aplica el tema guardado antes de pintar para evitar parpadeos */
+    (function () {
+      try {
+        var t = localStorage.getItem('tecnolsm-theme');
+        document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+      } catch (e) {}
+    })();
+  </script>
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Saltar al contenido</a>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="wordmark" aria-label="tecnoLSM">tecno<b>LSM</b></span>
+        <h1>Simulador de bases de datos</h1>
+      </div>
+      <div class="topbar-actions">
+        <label class="field-inline" for="bd-select">
+          <iconify-icon icon="mdi:database-outline" aria-hidden="true"></iconify-icon>
+          <span>Base de datos</span>
+        </label>
+        <select id="bd-select" class="select">
+          <option value="instituto">Instituto</option>
+          <option value="tienda">Tienda</option>
+          <option value="biblioteca">Biblioteca</option>
+        </select>
+        <button id="theme-toggle" class="btn btn-ghost" type="button" aria-label="Cambiar entre tema claro y oscuro">
+          <iconify-icon id="theme-icon" icon="mdi:white-balance-sunny" aria-hidden="true"></iconify-icon>
+          <span id="theme-label">Tema claro</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="layout">
+    <!-- ===== Columna principal ===== -->
+    <section class="col-main" aria-label="Zona de trabajo">
+      <p class="intro">
+        Una <strong>base de datos</strong> guarda información organizada en <strong>tablas</strong>.
+        Con el lenguaje <strong>SQL</strong> le haces preguntas (consultas) y ella te responde con una tabla de resultados.
+        Elige una base de datos, escribe una consulta y pulsa <kbd>Ejecutar</kbd>.
+      </p>
+
+      <div class="tabs" role="tablist" aria-label="Modo de trabajo">
+        <button class="tab is-active" role="tab" id="tab-libre" aria-selected="true" aria-controls="panel-libre" data-tab="libre" type="button">
+          <iconify-icon icon="mdi:code-braces" aria-hidden="true"></iconify-icon> Práctica libre
+        </button>
+        <button class="tab" role="tab" id="tab-ejemplos" aria-selected="false" aria-controls="panel-ejemplos" data-tab="ejemplos" type="button" tabindex="-1">
+          <iconify-icon icon="mdi:lightbulb-on-outline" aria-hidden="true"></iconify-icon> Ejemplos guiados
+        </button>
+        <button class="tab" role="tab" id="tab-examen" aria-selected="false" aria-controls="panel-examen" data-tab="examen" type="button" tabindex="-1">
+          <iconify-icon icon="mdi:clipboard-check-outline" aria-hidden="true"></iconify-icon> Modo examen
+        </button>
+      </div>
+
+      <div id="panel-libre" class="tab-panel card" role="tabpanel" aria-labelledby="tab-libre">
+        <p class="muted">Práctica libre: prueba lo que quieras. Los ejemplos de la pestaña «Ejemplos guiados» te dan ideas por donde empezar. Las instrucciones <code>INSERT</code>, <code>UPDATE</code> y <code>DELETE</code> modifican los datos solo en tu navegador: puedes volver a empezar con «Restaurar datos originales».</p>
+      </div>
+
+      <div id="panel-ejemplos" class="tab-panel card" role="tabpanel" aria-labelledby="tab-ejemplos" hidden>
+        <h2 class="card-title">Ejemplos guiados</h2>
+        <p class="muted">De menos a más difícil. Pulsa «Cargar en editor» y después «Ejecutar» para ver el resultado.</p>
+        <ol id="ejemplos-lista" class="ejemplos"></ol>
+      </div>
+
+      <div id="panel-examen" class="tab-panel card" role="tabpanel" aria-labelledby="tab-examen" hidden>
+        <h2 class="card-title">Modo examen</h2>
+        <p class="muted">Elige un enunciado, escribe tu consulta en el editor y pulsa «Comprobar». Se compara tu resultado con el esperado (da igual el orden de las filas).</p>
+        <div id="examen-lista" class="examen-lista" role="group" aria-label="Enunciados"></div>
+        <div id="examen-actual" class="examen-actual" hidden>
+          <div class="examen-meta">
+            <span id="examen-dificultad" class="badge"></span>
+            <span class="meta-item"><iconify-icon icon="mdi:counter" aria-hidden="true"></iconify-icon> Intentos: <strong id="examen-intentos">0</strong></span>
+            <span class="meta-item"><iconify-icon icon="mdi:timer-outline" aria-hidden="true"></iconify-icon> Tiempo: <strong id="examen-tiempo">00:00</strong></span>
+          </div>
+          <p id="examen-enunciado" class="enunciado"></p>
+          <div id="examen-feedback" class="msg" role="status" aria-live="polite" hidden></div>
+          <div class="examen-actions">
+            <button id="btn-comprobar" class="btn btn-primary" type="button">
+              <iconify-icon icon="mdi:check-circle-outline" aria-hidden="true"></iconify-icon> Comprobar
+            </button>
+            <button id="btn-pista" class="btn" type="button">
+              <iconify-icon icon="mdi:lightbulb-on-outline" aria-hidden="true"></iconify-icon> Ver pista
+            </button>
+            <button id="btn-solucion" class="btn" type="button" hidden>
+              <iconify-icon icon="mdi:eye-outline" aria-hidden="true"></iconify-icon> Ver solución
+            </button>
+          </div>
+          <p id="examen-pista" class="pista" hidden></p>
+          <pre id="examen-solucion" class="code-block" hidden></pre>
+        </div>
+      </div>
+
+      <!-- ===== Editor ===== -->
+      <div class="card editor-card">
+        <div class="editor-head">
+          <h2 class="card-title" id="editor-title">Editor SQL</h2>
+          <span class="hint">Ctrl + Enter para ejecutar</span>
+        </div>
+        <div class="editor-wrap">
+          <pre id="sql-highlight" class="editor-layer" aria-hidden="true"><code></code></pre>
+          <textarea id="sql-input" class="editor-layer editor-input" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off" aria-labelledby="editor-title" placeholder="Escribe aquí tu consulta, por ejemplo: SELECT * FROM alumnos;"></textarea>
+        </div>
+        <div class="toolbar">
+          <button id="btn-run" class="btn btn-primary" type="button">
+            <iconify-icon icon="mdi:play" aria-hidden="true"></iconify-icon> Ejecutar
+          </button>
+          <button id="btn-clear" class="btn" type="button">
+            <iconify-icon icon="mdi:eraser" aria-hidden="true"></iconify-icon> Limpiar
+          </button>
+          <span class="toolbar-sep" aria-hidden="true"></span>
+          <button id="btn-export-sql" class="btn" type="button">
+            <iconify-icon icon="mdi:download" aria-hidden="true"></iconify-icon> Exportar consulta
+          </button>
+          <button id="btn-import-sql" class="btn" type="button">
+            <iconify-icon icon="mdi:upload" aria-hidden="true"></iconify-icon> Importar consulta
+          </button>
+          <input id="file-import" type="file" accept=".sql,.txt,text/plain" hidden>
+          <button id="btn-export-csv" class="btn" type="button" disabled>
+            <iconify-icon icon="mdi:file-delimited-outline" aria-hidden="true"></iconify-icon> Exportar resultados
+          </button>
+          <button id="btn-restore" class="btn" type="button">
+            <iconify-icon icon="mdi:database-refresh-outline" aria-hidden="true"></iconify-icon> Restaurar datos originales
+          </button>
+        </div>
+      </div>
+
+      <!-- ===== Resultados ===== -->
+      <div class="card results-card">
+        <h2 class="card-title">Resultado</h2>
+        <div id="result-msg" class="msg msg-info" role="status" aria-live="polite">
+          Aún no has ejecutado ninguna consulta. Escribe una arriba y pulsa «Ejecutar».
+        </div>
+        <div id="result-table" class="table-wrap" tabindex="0" aria-label="Tabla de resultados"></div>
+      </div>
+    </section>
+
+    <!-- ===== Columna lateral ===== -->
+    <aside class="col-side" aria-label="Ayuda y datos">
+      <div class="card">
+        <h2 class="card-title">Base de datos activa</h2>
+        <p id="bd-nombre" class="bd-nombre">Cargando…</p>
+        <p id="bd-resumen" class="muted"></p>
+        <table class="mini-table" aria-label="Número de filas por tabla">
+          <thead><tr><th scope="col">Tabla</th><th scope="col" class="num">Filas</th></tr></thead>
+          <tbody id="bd-tablas"></tbody>
+        </table>
+      </div>
+
+      <details class="card collapsible" id="er-details" open>
+        <summary class="card-title"><iconify-icon icon="mdi:chevron-down" class="chev" aria-hidden="true"></iconify-icon> Diagrama ER</summary>
+        <p class="muted small">Cada caja es una tabla. <strong class="pk-label">PK</strong> = clave primaria, <strong class="fk-label">FK</strong> = clave foránea. Las líneas unen una FK (<em>N</em>) con la PK a la que apunta (<em>1</em>). Se resaltan las tablas que usa tu consulta.</p>
+        <div id="er-container" class="er-container"></div>
+      </details>
+
+      <details class="card collapsible" id="conceptos-details" open>
+        <summary class="card-title"><iconify-icon icon="mdi:chevron-down" class="chev" aria-hidden="true"></iconify-icon> Conceptos clave</summary>
+        <dl class="conceptos">
+          <dt>Tabla</dt>
+          <dd>Conjunto de datos sobre un mismo tema, organizado en filas y columnas, como una hoja de cálculo. Ejemplo: <code>alumnos</code>.</dd>
+          <dt>Fila (registro)</dt>
+          <dd>Cada elemento guardado en la tabla. Una fila de <code>alumnos</code> es un alumno concreto.</dd>
+          <dt>Columna (campo)</dt>
+          <dd>Una característica que tienen todas las filas, con un tipo de dato (número, texto, fecha…). Ejemplo: <code>nombre</code>.</dd>
+          <dt>Clave primaria (PK)</dt>
+          <dd>Columna cuyo valor identifica cada fila de forma única y nunca se repite. Normalmente es <code>id</code>.</dd>
+          <dt>Clave foránea (FK)</dt>
+          <dd>Columna que guarda la clave primaria de otra tabla y sirve para relacionarlas. <code>notas.alumno_id</code> apunta a <code>alumnos.id</code>.</dd>
+          <dt>JOIN</dt>
+          <dd>Une filas de dos tablas cuando coinciden la clave foránea y la primaria: <code>FROM alumnos a JOIN notas n ON a.id = n.alumno_id</code>. <code>LEFT JOIN</code> conserva también las filas sin pareja.</dd>
+          <dt>WHERE</dt>
+          <dd>Filtra filas: solo se quedan las que cumplen la condición. <code>WHERE grupo = 'A'</code></dd>
+          <dt>GROUP BY</dt>
+          <dd>Agrupa las filas que comparten un valor para poder resumirlas. <code>GROUP BY grupo</code> crea un grupo por cada grupo de clase.</dd>
+          <dt>Agregación</dt>
+          <dd>Función que resume varias filas en un valor: <code>COUNT</code> (contar), <code>SUM</code> (sumar), <code>AVG</code> (media), <code>MIN</code> y <code>MAX</code>. Para filtrar por su resultado se usa <code>HAVING</code>.</dd>
+        </dl>
+      </details>
+
+      <details class="card collapsible" id="historial-details" open>
+        <summary class="card-title"><iconify-icon icon="mdi:chevron-down" class="chev" aria-hidden="true"></iconify-icon> Historial (últimas 20)</summary>
+        <ol id="historial-lista" class="historial"></ol>
+        <p id="historial-vacio" class="muted small">Aquí aparecerán las consultas que ejecutes. Pulsa una para recargarla en el editor.</p>
+        <button id="btn-clear-history" class="btn btn-small" type="button">
+          <iconify-icon icon="mdi:delete-outline" aria-hidden="true"></iconify-icon> Borrar historial
+        </button>
+      </details>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <p>Aplicación creada por Tecno LSM para uso educativo © 2026 Licencia libre de uso no comercial (Creative Commons BY-NC-SA 4.0).</p>
+  </footer>
+
+  <div class="watermark" aria-hidden="true">tecnoLSM · Simulador de bases de datos</div>
+
+  <script src="js/sql-engine.js"></script>
+  <script src="js/diagrama-er.js"></script>
+  <script src="js/ejemplos.js"></script>
+  <script src="js/examenes.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+{
+  "nombre": "Tienda de materiales (ejemplo)",
+  "tablas": {
+    "clientes": [
+      {
+        "id": 1,
+        "nombre": "Ferretería El Tornillo",
+        "ciudad": "Santander",
+        "fecha_alta": "2023-09-12"
+      },
+      {
+        "id": 2,
+        "nombre": "Construcciones Norte S.L.",
+        "ciudad": "Torrelavega",
+        "fecha_alta": "2024-01-20"
+      },
+      {
+        "id": 3,
+        "nombre": "Talleres Mecánicos Gómez",
+        "ciudad": "Laredo",
+        "fecha_alta": "2023-11-05"
+      },
+      {
+        "id": 4,
+        "nombre": "Instalaciones Eléctricas Ruiz",
+        "ciudad": "Castro Urdiales",
+        "fecha_alta": "2024-03-15"
+      },
+      {
+        "id": 5,
+        "nombre": "Carpintería Moderna",
+        "ciudad": "Santander",
+        "fecha_alta": "2023-08-01"
+      }
+    ],
+    "productos": [
+      {
+        "id": 1,
+        "nombre": "Tornillo M6 x 20",
+        "categoria": "Ferretería",
+        "precio": 0.15,
+        "stock": 5000
+      },
+      {
+        "id": 2,
+        "nombre": "Tuerca M6",
+        "categoria": "Ferretería",
+        "precio": 0.08,
+        "stock": 8000
+      },
+      {
+        "id": 3,
+        "nombre": "Cable 2,5 mm² (m)",
+        "categoria": "Electricidad",
+        "precio": 1.2,
+        "stock": 1200
+      },
+      {
+        "id": 4,
+        "nombre": "Interruptor magnetotérmico 16A",
+        "categoria": "Electricidad",
+        "precio": 8.5,
+        "stock": 120
+      },
+      {
+        "id": 5,
+        "nombre": "Tabla pino 200x20x2 cm",
+        "categoria": "Madera",
+        "precio": 12.0,
+        "stock": 45
+      },
+      {
+        "id": 6,
+        "nombre": "Bisagra 3\"",
+        "categoria": "Herrajes",
+        "precio": 2.3,
+        "stock": 300
+      },
+      {
+        "id": 7,
+        "nombre": "Pintura blanca 4L",
+        "categoria": "Pintura",
+        "precio": 24.9,
+        "stock": 60
+      },
+      {
+        "id": 8,
+        "nombre": "Broca HSS 8mm",
+        "categoria": "Herramientas",
+        "precio": 4.5,
+        "stock": 90
+      }
+    ],
+    "pedidos": [
+      {
+        "id": 1,
+        "cliente_id": 1,
+        "fecha": "2024-09-03",
+        "estado": "entregado"
+      },
+      {
+        "id": 2,
+        "cliente_id": 2,
+        "fecha": "2024-09-10",
+        "estado": "entregado"
+      },
+      {
+        "id": 3,
+        "cliente_id": 1,
+        "fecha": "2024-09-18",
+        "estado": "pendiente"
+      },
+      {
+        "id": 4,
+        "cliente_id": 3,
+        "fecha": "2024-09-22",
+        "estado": "entregado"
+      },
+      {
+        "id": 5,
+        "cliente_id": 4,
+        "fecha": "2024-09-25",
+        "estado": "pendiente"
+      },
+      {
+        "id": 6,
+        "cliente_id": 5,
+        "fecha": "2024-09-28",
+        "estado": "entregado"
+      }
+    ],
+    "lineas_pedido": [
+      {
+        "pedido_id": 1,
+        "producto_id": 1,
+        "cantidad": 200,
+        "precio_unitario": 0.15
+      },
+      {
+        "pedido_id": 1,
+        "producto_id": 2,
+        "cantidad": 200,
+        "precio_unitario": 0.08
+      },
+      {
+        "pedido_id": 2,
+        "producto_id": 3,
+        "cantidad": 50,
+        "precio_unitario": 1.2
+      },
+      {
+        "pedido_id": 2,
+        "producto_id": 4,
+        "cantidad": 10,
+        "precio_unitario": 8.5
+      },
+      {
+        "pedido_id": 3,
+        "producto_id": 5,
+        "cantidad": 12,
+        "precio_unitario": 12.0
+      },
+      {
+        "pedido_id": 3,
+        "producto_id": 6,
+        "cantidad": 30,
+        "precio_unitario": 2.3
+      },
+      {
+        "pedido_id": 4,
+        "producto_id": 7,
+        "cantidad": 5,
+        "precio_unitario": 24.9
+      },
+      {
+        "pedido_id": 4,
+        "producto_id": 8,
+        "cantidad": 6,
+        "precio_unitario": 4.5
+      },
+      {
+        "pedido_id": 5,
+        "producto_id": 3,
+        "cantidad": 80,
+        "precio_unitario": 1.2
+      },
+      {
+        "pedido_id": 5,
+        "producto_id": 4,
+        "cantidad": 4,
+        "precio_unitario": 8.5
+      },
+      {
+        "pedido_id": 6,
+        "producto_id": 5,
+        "cantidad": 8,
+        "precio_unitario": 12.0
+      },
+      {
+        "pedido_id": 6,
+        "producto_id": 1,
+        "cantidad": 500,
+        "precio_unitario": 0.15
+      }
+    ]
+  },
+  "relaciones": [
+    {
+      "from": "pedidos.cliente_id",
+      "to": "clientes.id"
+    },
+    {
+      "from": "lineas_pedido.pedido_id",
+      "to": "pedidos.id"
+    },
+    {
+      "from": "lineas_pedido.producto_id",
+      "to": "productos.id"
+    }
+  ]
+}

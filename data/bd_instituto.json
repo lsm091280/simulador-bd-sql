@@ -1,0 +1,1019 @@
+{
+  "nombre": "Instituto San Miguel (ejemplo)",
+  "tablas": {
+    "alumnos": [
+      {
+        "id": 1,
+        "nombre": "Ana",
+        "apellidos": "García López",
+        "curso": "2º Bach",
+        "grupo": "A"
+      },
+      {
+        "id": 2,
+        "nombre": "Carlos",
+        "apellidos": "Fernández Ruiz",
+        "curso": "2º Bach",
+        "grupo": "A"
+      },
+      {
+        "id": 3,
+        "nombre": "Lucía",
+        "apellidos": "Martínez Soto",
+        "curso": "2º Bach",
+        "grupo": "B"
+      },
+      {
+        "id": 4,
+        "nombre": "David",
+        "apellidos": "López Pérez",
+        "curso": "2º Bach",
+        "grupo": "B"
+      },
+      {
+        "id": 5,
+        "nombre": "María",
+        "apellidos": "Sánchez Díaz",
+        "curso": "2º Bach",
+        "grupo": "A"
+      },
+      {
+        "id": 6,
+        "nombre": "Javier",
+        "apellidos": "Gómez Torres",
+        "curso": "2º Bach",
+        "grupo": "B"
+      },
+      {
+        "id": 7,
+        "nombre": "Elena",
+        "apellidos": "Ramírez Vega",
+        "curso": "2º Bach",
+        "grupo": "A"
+      },
+      {
+        "id": 8,
+        "nombre": "Pablo",
+        "apellidos": "Herrera Molina",
+        "curso": "2º Bach",
+        "grupo": "B"
+      }
+    ],
+    "asignaturas": [
+      {
+        "id": 1,
+        "nombre": "Programación y Gestión de Datos",
+        "curso": "2º Bach",
+        "horas": 4
+      },
+      {
+        "id": 2,
+        "nombre": "Tecnología e Ingeniería II",
+        "curso": "2º Bach",
+        "horas": 3
+      },
+      {
+        "id": 3,
+        "nombre": "Matemáticas II",
+        "curso": "2º Bach",
+        "horas": 4
+      },
+      {
+        "id": 4,
+        "nombre": "Física",
+        "curso": "2º Bach",
+        "horas": 4
+      },
+      {
+        "id": 5,
+        "nombre": "Inglés",
+        "curso": "2º Bach",
+        "horas": 3
+      }
+    ],
+    "profesores": [
+      {
+        "id": 1,
+        "nombre": "Luis Solá",
+        "departamento": "Tecnología"
+      },
+      {
+        "id": 2,
+        "nombre": "María Jesús",
+        "departamento": "Matemáticas"
+      },
+      {
+        "id": 3,
+        "nombre": "Carlos Ruiz",
+        "departamento": "Física"
+      },
+      {
+        "id": 4,
+        "nombre": "Ana Belén",
+        "departamento": "Inglés"
+      }
+    ],
+    "matriculas": [
+      {
+        "alumno_id": 1,
+        "asignatura_id": 1
+      },
+      {
+        "alumno_id": 1,
+        "asignatura_id": 2
+      },
+      {
+        "alumno_id": 1,
+        "asignatura_id": 3
+      },
+      {
+        "alumno_id": 1,
+        "asignatura_id": 4
+      },
+      {
+        "alumno_id": 1,
+        "asignatura_id": 5
+      },
+      {
+        "alumno_id": 2,
+        "asignatura_id": 1
+      },
+      {
+        "alumno_id": 2,
+        "asignatura_id": 2
+      },
+      {
+        "alumno_id": 2,
+        "asignatura_id": 3
+      },
+      {
+        "alumno_id": 2,
+        "asignatura_id": 4
+      },
+      {
+        "alumno_id": 2,
+        "asignatura_id": 5
+      },
+      {
+        "alumno_id": 3,
+        "asignatura_id": 1
+      },
+      {
+        "alumno_id": 3,
+        "asignatura_id": 2
+      },
+      {
+        "alumno_id": 3,
+        "asignatura_id": 3
+      },
+      {
+        "alumno_id": 3,
+        "asignatura_id": 4
+      },
+      {
+        "alumno_id": 3,
+        "asignatura_id": 5
+      },
+      {
+        "alumno_id": 4,
+        "asignatura_id": 1
+      },
+      {
+        "alumno_id": 4,
+        "asignatura_id": 2
+      },
+      {
+        "alumno_id": 4,
+        "asignatura_id": 3
+      },
+      {
+        "alumno_id": 4,
+        "asignatura_id": 4
+      },
+      {
+        "alumno_id": 4,
+        "asignatura_id": 5
+      },
+      {
+        "alumno_id": 5,
+        "asignatura_id": 1
+      },
+      {
+        "alumno_id": 5,
+        "asignatura_id": 2
+      },
+      {
+        "alumno_id": 5,
+        "asignatura_id": 3
+      },
+      {
+        "alumno_id": 5,
+        "asignatura_id": 4
+      },
+      {
+        "alumno_id": 5,
+        "asignatura_id": 5
+      },
+      {
+        "alumno_id": 6,
+        "asignatura_id": 1
+      },
+      {
+        "alumno_id": 6,
+        "asignatura_id": 2
+      },
+      {
+        "alumno_id": 6,
+        "asignatura_id": 3
+      },
+      {
+        "alumno_id": 6,
+        "asignatura_id": 4
+      },
+      {
+        "alumno_id": 6,
+        "asignatura_id": 5
+      },
+      {
+        "alumno_id": 7,
+        "asignatura_id": 1
+      },
+      {
+        "alumno_id": 7,
+        "asignatura_id": 2
+      },
+      {
+        "alumno_id": 7,
+        "asignatura_id": 3
+      },
+      {
+        "alumno_id": 7,
+        "asignatura_id": 4
+      },
+      {
+        "alumno_id": 7,
+        "asignatura_id": 5
+      },
+      {
+        "alumno_id": 8,
+        "asignatura_id": 1
+      },
+      {
+        "alumno_id": 8,
+        "asignatura_id": 2
+      },
+      {
+        "alumno_id": 8,
+        "asignatura_id": 3
+      },
+      {
+        "alumno_id": 8,
+        "asignatura_id": 4
+      },
+      {
+        "alumno_id": 8,
+        "asignatura_id": 5
+      }
+    ],
+    "notas": [
+      {
+        "alumno_id": 1,
+        "asignatura_id": 1,
+        "trimestre": 1,
+        "nota": 7.5
+      },
+      {
+        "alumno_id": 1,
+        "asignatura_id": 1,
+        "trimestre": 2,
+        "nota": 4.1
+      },
+      {
+        "alumno_id": 1,
+        "asignatura_id": 1,
+        "trimestre": 3,
+        "nota": 5.5
+      },
+      {
+        "alumno_id": 1,
+        "asignatura_id": 2,
+        "trimestre": 1,
+        "nota": 5.2
+      },
+      {
+        "alumno_id": 1,
+        "asignatura_id": 2,
+        "trimestre": 2,
+        "nota": 8.1
+      },
+      {
+        "alumno_id": 1,
+        "asignatura_id": 2,
+        "trimestre": 3,
+        "nota": 7.7
+      },
+      {
+        "alumno_id": 1,
+        "asignatura_id": 3,
+        "trimestre": 1,
+        "nota": 8.9
+      },
+      {
+        "alumno_id": 1,
+        "asignatura_id": 3,
+        "trimestre": 2,
+        "nota": 4.5
+      },
+      {
+        "alumno_id": 1,
+        "asignatura_id": 3,
+        "trimestre": 3,
+        "nota": 6.3
+      },
+      {
+        "alumno_id": 1,
+        "asignatura_id": 4,
+        "trimestre": 1,
+        "nota": 4.2
+      },
+      {
+        "alumno_id": 1,
+        "asignatura_id": 4,
+        "trimestre": 2,
+        "nota": 5.2
+      },
+      {
+        "alumno_id": 1,
+        "asignatura_id": 4,
+        "trimestre": 3,
+        "nota": 6.8
+      },
+      {
+        "alumno_id": 1,
+        "asignatura_id": 5,
+        "trimestre": 1,
+        "nota": 4.1
+      },
+      {
+        "alumno_id": 1,
+        "asignatura_id": 5,
+        "trimestre": 2,
+        "nota": 5.1
+      },
+      {
+        "alumno_id": 1,
+        "asignatura_id": 5,
+        "trimestre": 3,
+        "nota": 7.6
+      },
+      {
+        "alumno_id": 2,
+        "asignatura_id": 1,
+        "trimestre": 1,
+        "nota": 7.0
+      },
+      {
+        "alumno_id": 2,
+        "asignatura_id": 1,
+        "trimestre": 2,
+        "nota": 5.2
+      },
+      {
+        "alumno_id": 2,
+        "asignatura_id": 1,
+        "trimestre": 3,
+        "nota": 7.2
+      },
+      {
+        "alumno_id": 2,
+        "asignatura_id": 2,
+        "trimestre": 1,
+        "nota": 8.5
+      },
+      {
+        "alumno_id": 2,
+        "asignatura_id": 2,
+        "trimestre": 2,
+        "nota": 4.0
+      },
+      {
+        "alumno_id": 2,
+        "asignatura_id": 2,
+        "trimestre": 3,
+        "nota": 8.4
+      },
+      {
+        "alumno_id": 2,
+        "asignatura_id": 3,
+        "trimestre": 1,
+        "nota": 7.8
+      },
+      {
+        "alumno_id": 2,
+        "asignatura_id": 3,
+        "trimestre": 2,
+        "nota": 5.9
+      },
+      {
+        "alumno_id": 2,
+        "asignatura_id": 3,
+        "trimestre": 3,
+        "nota": 4.9
+      },
+      {
+        "alumno_id": 2,
+        "asignatura_id": 4,
+        "trimestre": 1,
+        "nota": 9.3
+      },
+      {
+        "alumno_id": 2,
+        "asignatura_id": 4,
+        "trimestre": 2,
+        "nota": 5.9
+      },
+      {
+        "alumno_id": 2,
+        "asignatura_id": 4,
+        "trimestre": 3,
+        "nota": 4.5
+      },
+      {
+        "alumno_id": 2,
+        "asignatura_id": 5,
+        "trimestre": 1,
+        "nota": 4.5
+      },
+      {
+        "alumno_id": 2,
+        "asignatura_id": 5,
+        "trimestre": 2,
+        "nota": 8.7
+      },
+      {
+        "alumno_id": 2,
+        "asignatura_id": 5,
+        "trimestre": 3,
+        "nota": 7.3
+      },
+      {
+        "alumno_id": 3,
+        "asignatura_id": 1,
+        "trimestre": 1,
+        "nota": 8.4
+      },
+      {
+        "alumno_id": 3,
+        "asignatura_id": 1,
+        "trimestre": 2,
+        "nota": 8.0
+      },
+      {
+        "alumno_id": 3,
+        "asignatura_id": 1,
+        "trimestre": 3,
+        "nota": 6.9
+      },
+      {
+        "alumno_id": 3,
+        "asignatura_id": 2,
+        "trimestre": 1,
+        "nota": 9.4
+      },
+      {
+        "alumno_id": 3,
+        "asignatura_id": 2,
+        "trimestre": 2,
+        "nota": 6.1
+      },
+      {
+        "alumno_id": 3,
+        "asignatura_id": 2,
+        "trimestre": 3,
+        "nota": 7.0
+      },
+      {
+        "alumno_id": 3,
+        "asignatura_id": 3,
+        "trimestre": 1,
+        "nota": 8.6
+      },
+      {
+        "alumno_id": 3,
+        "asignatura_id": 3,
+        "trimestre": 2,
+        "nota": 7.4
+      },
+      {
+        "alumno_id": 3,
+        "asignatura_id": 3,
+        "trimestre": 3,
+        "nota": 8.7
+      },
+      {
+        "alumno_id": 3,
+        "asignatura_id": 4,
+        "trimestre": 1,
+        "nota": 7.2
+      },
+      {
+        "alumno_id": 3,
+        "asignatura_id": 4,
+        "trimestre": 2,
+        "nota": 7.9
+      },
+      {
+        "alumno_id": 3,
+        "asignatura_id": 4,
+        "trimestre": 3,
+        "nota": 4.3
+      },
+      {
+        "alumno_id": 3,
+        "asignatura_id": 5,
+        "trimestre": 1,
+        "nota": 5.3
+      },
+      {
+        "alumno_id": 3,
+        "asignatura_id": 5,
+        "trimestre": 2,
+        "nota": 5.6
+      },
+      {
+        "alumno_id": 3,
+        "asignatura_id": 5,
+        "trimestre": 3,
+        "nota": 4.4
+      },
+      {
+        "alumno_id": 4,
+        "asignatura_id": 1,
+        "trimestre": 1,
+        "nota": 5.3
+      },
+      {
+        "alumno_id": 4,
+        "asignatura_id": 1,
+        "trimestre": 2,
+        "nota": 4.6
+      },
+      {
+        "alumno_id": 4,
+        "asignatura_id": 1,
+        "trimestre": 3,
+        "nota": 5.5
+      },
+      {
+        "alumno_id": 4,
+        "asignatura_id": 2,
+        "trimestre": 1,
+        "nota": 7.5
+      },
+      {
+        "alumno_id": 4,
+        "asignatura_id": 2,
+        "trimestre": 2,
+        "nota": 6.0
+      },
+      {
+        "alumno_id": 4,
+        "asignatura_id": 2,
+        "trimestre": 3,
+        "nota": 6.0
+      },
+      {
+        "alumno_id": 4,
+        "asignatura_id": 3,
+        "trimestre": 1,
+        "nota": 5.2
+      },
+      {
+        "alumno_id": 4,
+        "asignatura_id": 3,
+        "trimestre": 2,
+        "nota": 5.5
+      },
+      {
+        "alumno_id": 4,
+        "asignatura_id": 3,
+        "trimestre": 3,
+        "nota": 9.2
+      },
+      {
+        "alumno_id": 4,
+        "asignatura_id": 4,
+        "trimestre": 1,
+        "nota": 7.6
+      },
+      {
+        "alumno_id": 4,
+        "asignatura_id": 4,
+        "trimestre": 2,
+        "nota": 7.4
+      },
+      {
+        "alumno_id": 4,
+        "asignatura_id": 4,
+        "trimestre": 3,
+        "nota": 4.9
+      },
+      {
+        "alumno_id": 4,
+        "asignatura_id": 5,
+        "trimestre": 1,
+        "nota": 8.0
+      },
+      {
+        "alumno_id": 4,
+        "asignatura_id": 5,
+        "trimestre": 2,
+        "nota": 4.9
+      },
+      {
+        "alumno_id": 4,
+        "asignatura_id": 5,
+        "trimestre": 3,
+        "nota": 6.1
+      },
+      {
+        "alumno_id": 5,
+        "asignatura_id": 1,
+        "trimestre": 1,
+        "nota": 9.4
+      },
+      {
+        "alumno_id": 5,
+        "asignatura_id": 1,
+        "trimestre": 2,
+        "nota": 7.5
+      },
+      {
+        "alumno_id": 5,
+        "asignatura_id": 1,
+        "trimestre": 3,
+        "nota": 7.1
+      },
+      {
+        "alumno_id": 5,
+        "asignatura_id": 2,
+        "trimestre": 1,
+        "nota": 7.8
+      },
+      {
+        "alumno_id": 5,
+        "asignatura_id": 2,
+        "trimestre": 2,
+        "nota": 8.6
+      },
+      {
+        "alumno_id": 5,
+        "asignatura_id": 2,
+        "trimestre": 3,
+        "nota": 8.3
+      },
+      {
+        "alumno_id": 5,
+        "asignatura_id": 3,
+        "trimestre": 1,
+        "nota": 5.3
+      },
+      {
+        "alumno_id": 5,
+        "asignatura_id": 3,
+        "trimestre": 2,
+        "nota": 4.2
+      },
+      {
+        "alumno_id": 5,
+        "asignatura_id": 3,
+        "trimestre": 3,
+        "nota": 5.7
+      },
+      {
+        "alumno_id": 5,
+        "asignatura_id": 4,
+        "trimestre": 1,
+        "nota": 5.5
+      },
+      {
+        "alumno_id": 5,
+        "asignatura_id": 4,
+        "trimestre": 2,
+        "nota": 5.2
+      },
+      {
+        "alumno_id": 5,
+        "asignatura_id": 4,
+        "trimestre": 3,
+        "nota": 9.2
+      },
+      {
+        "alumno_id": 5,
+        "asignatura_id": 5,
+        "trimestre": 1,
+        "nota": 8.8
+      },
+      {
+        "alumno_id": 5,
+        "asignatura_id": 5,
+        "trimestre": 2,
+        "nota": 5.7
+      },
+      {
+        "alumno_id": 5,
+        "asignatura_id": 5,
+        "trimestre": 3,
+        "nota": 7.6
+      },
+      {
+        "alumno_id": 6,
+        "asignatura_id": 1,
+        "trimestre": 1,
+        "nota": 6.2
+      },
+      {
+        "alumno_id": 6,
+        "asignatura_id": 1,
+        "trimestre": 2,
+        "nota": 9.0
+      },
+      {
+        "alumno_id": 6,
+        "asignatura_id": 1,
+        "trimestre": 3,
+        "nota": 6.5
+      },
+      {
+        "alumno_id": 6,
+        "asignatura_id": 2,
+        "trimestre": 1,
+        "nota": 5.5
+      },
+      {
+        "alumno_id": 6,
+        "asignatura_id": 2,
+        "trimestre": 2,
+        "nota": 5.4
+      },
+      {
+        "alumno_id": 6,
+        "asignatura_id": 2,
+        "trimestre": 3,
+        "nota": 7.1
+      },
+      {
+        "alumno_id": 6,
+        "asignatura_id": 3,
+        "trimestre": 1,
+        "nota": 5.4
+      },
+      {
+        "alumno_id": 6,
+        "asignatura_id": 3,
+        "trimestre": 2,
+        "nota": 7.2
+      },
+      {
+        "alumno_id": 6,
+        "asignatura_id": 3,
+        "trimestre": 3,
+        "nota": 8.9
+      },
+      {
+        "alumno_id": 6,
+        "asignatura_id": 4,
+        "trimestre": 1,
+        "nota": 6.2
+      },
+      {
+        "alumno_id": 6,
+        "asignatura_id": 4,
+        "trimestre": 2,
+        "nota": 5.2
+      },
+      {
+        "alumno_id": 6,
+        "asignatura_id": 4,
+        "trimestre": 3,
+        "nota": 9.5
+      },
+      {
+        "alumno_id": 6,
+        "asignatura_id": 5,
+        "trimestre": 1,
+        "nota": 6.8
+      },
+      {
+        "alumno_id": 6,
+        "asignatura_id": 5,
+        "trimestre": 2,
+        "nota": 4.5
+      },
+      {
+        "alumno_id": 6,
+        "asignatura_id": 5,
+        "trimestre": 3,
+        "nota": 4.3
+      },
+      {
+        "alumno_id": 7,
+        "asignatura_id": 1,
+        "trimestre": 1,
+        "nota": 4.6
+      },
+      {
+        "alumno_id": 7,
+        "asignatura_id": 1,
+        "trimestre": 2,
+        "nota": 7.5
+      },
+      {
+        "alumno_id": 7,
+        "asignatura_id": 1,
+        "trimestre": 3,
+        "nota": 8.4
+      },
+      {
+        "alumno_id": 7,
+        "asignatura_id": 2,
+        "trimestre": 1,
+        "nota": 6.3
+      },
+      {
+        "alumno_id": 7,
+        "asignatura_id": 2,
+        "trimestre": 2,
+        "nota": 4.3
+      },
+      {
+        "alumno_id": 7,
+        "asignatura_id": 2,
+        "trimestre": 3,
+        "nota": 6.1
+      },
+      {
+        "alumno_id": 7,
+        "asignatura_id": 3,
+        "trimestre": 1,
+        "nota": 9.5
+      },
+      {
+        "alumno_id": 7,
+        "asignatura_id": 3,
+        "trimestre": 2,
+        "nota": 6.9
+      },
+      {
+        "alumno_id": 7,
+        "asignatura_id": 3,
+        "trimestre": 3,
+        "nota": 9.3
+      },
+      {
+        "alumno_id": 7,
+        "asignatura_id": 4,
+        "trimestre": 1,
+        "nota": 8.7
+      },
+      {
+        "alumno_id": 7,
+        "asignatura_id": 4,
+        "trimestre": 2,
+        "nota": 4.1
+      },
+      {
+        "alumno_id": 7,
+        "asignatura_id": 4,
+        "trimestre": 3,
+        "nota": 8.0
+      },
+      {
+        "alumno_id": 7,
+        "asignatura_id": 5,
+        "trimestre": 1,
+        "nota": 7.7
+      },
+      {
+        "alumno_id": 7,
+        "asignatura_id": 5,
+        "trimestre": 2,
+        "nota": 7.0
+      },
+      {
+        "alumno_id": 7,
+        "asignatura_id": 5,
+        "trimestre": 3,
+        "nota": 5.5
+      },
+      {
+        "alumno_id": 8,
+        "asignatura_id": 1,
+        "trimestre": 1,
+        "nota": 7.5
+      },
+      {
+        "alumno_id": 8,
+        "asignatura_id": 1,
+        "trimestre": 2,
+        "nota": 4.6
+      },
+      {
+        "alumno_id": 8,
+        "asignatura_id": 1,
+        "trimestre": 3,
+        "nota": 6.4
+      },
+      {
+        "alumno_id": 8,
+        "asignatura_id": 2,
+        "trimestre": 1,
+        "nota": 6.5
+      },
+      {
+        "alumno_id": 8,
+        "asignatura_id": 2,
+        "trimestre": 2,
+        "nota": 9.2
+      },
+      {
+        "alumno_id": 8,
+        "asignatura_id": 2,
+        "trimestre": 3,
+        "nota": 8.8
+      },
+      {
+        "alumno_id": 8,
+        "asignatura_id": 3,
+        "trimestre": 1,
+        "nota": 5.4
+      },
+      {
+        "alumno_id": 8,
+        "asignatura_id": 3,
+        "trimestre": 2,
+        "nota": 6.8
+      },
+      {
+        "alumno_id": 8,
+        "asignatura_id": 3,
+        "trimestre": 3,
+        "nota": 5.0
+      },
+      {
+        "alumno_id": 8,
+        "asignatura_id": 4,
+        "trimestre": 1,
+        "nota": 9.0
+      },
+      {
+        "alumno_id": 8,
+        "asignatura_id": 4,
+        "trimestre": 2,
+        "nota": 8.8
+      },
+      {
+        "alumno_id": 8,
+        "asignatura_id": 4,
+        "trimestre": 3,
+        "nota": 5.6
+      },
+      {
+        "alumno_id": 8,
+        "asignatura_id": 5,
+        "trimestre": 1,
+        "nota": 7.5
+      },
+      {
+        "alumno_id": 8,
+        "asignatura_id": 5,
+        "trimestre": 2,
+        "nota": 7.3
+      },
+      {
+        "alumno_id": 8,
+        "asignatura_id": 5,
+        "trimestre": 3,
+        "nota": 4.8
+      }
+    ]
+  },
+  "relaciones": [
+    {
+      "from": "matriculas.alumno_id",
+      "to": "alumnos.id"
+    },
+    {
+      "from": "matriculas.asignatura_id",
+      "to": "asignaturas.id"
+    },
+    {
+      "from": "notas.alumno_id",
+      "to": "alumnos.id"
+    },
+    {
+      "from": "notas.asignatura_id",
+      "to": "asignaturas.id"
+    }
+  ]
+}

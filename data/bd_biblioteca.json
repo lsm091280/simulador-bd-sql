@@ -1,0 +1,186 @@
+{
+  "nombre": "Biblioteca del instituto (ejemplo)",
+  "tablas": {
+    "autores": [
+      {
+        "id": 1,
+        "nombre": "Miguel de Cervantes",
+        "nacionalidad": "Española"
+      },
+      {
+        "id": 2,
+        "nombre": "Gabriel García Márquez",
+        "nacionalidad": "Colombiana"
+      },
+      {
+        "id": 3,
+        "nombre": "Jane Austen",
+        "nacionalidad": "Británica"
+      },
+      {
+        "id": 4,
+        "nombre": "Antoine de Saint-Exupéry",
+        "nacionalidad": "Francesa"
+      },
+      {
+        "id": 5,
+        "nombre": "J.K. Rowling",
+        "nacionalidad": "Británica"
+      }
+    ],
+    "libros": [
+      {
+        "id": 1,
+        "titulo": "Don Quijote de la Mancha",
+        "autor_id": 1,
+        "genero": "Novela",
+        "anio": 1605,
+        "ejemplares": 3
+      },
+      {
+        "id": 2,
+        "titulo": "Cien años de soledad",
+        "autor_id": 2,
+        "genero": "Novela",
+        "anio": 1967,
+        "ejemplares": 4
+      },
+      {
+        "id": 3,
+        "titulo": "Orgullo y prejuicio",
+        "autor_id": 3,
+        "genero": "Novela romántica",
+        "anio": 1813,
+        "ejemplares": 2
+      },
+      {
+        "id": 4,
+        "titulo": "El principito",
+        "autor_id": 4,
+        "genero": "Fábula",
+        "anio": 1943,
+        "ejemplares": 5
+      },
+      {
+        "id": 5,
+        "titulo": "Harry Potter y la piedra filosofal",
+        "autor_id": 5,
+        "genero": "Fantasía",
+        "anio": 1997,
+        "ejemplares": 6
+      },
+      {
+        "id": 6,
+        "titulo": "El amor en los tiempos del cólera",
+        "autor_id": 2,
+        "genero": "Novela",
+        "anio": 1985,
+        "ejemplares": 2
+      },
+      {
+        "id": 7,
+        "titulo": "Emma",
+        "autor_id": 3,
+        "genero": "Novela romántica",
+        "anio": 1815,
+        "ejemplares": 1
+      }
+    ],
+    "usuarios": [
+      {
+        "id": 1,
+        "nombre": "Ana García",
+        "tipo": "alumno",
+        "fecha_alta": "2024-09-01"
+      },
+      {
+        "id": 2,
+        "nombre": "Carlos Fernández",
+        "tipo": "alumno",
+        "fecha_alta": "2024-09-01"
+      },
+      {
+        "id": 3,
+        "nombre": "Lucía Martínez",
+        "tipo": "alumno",
+        "fecha_alta": "2024-09-01"
+      },
+      {
+        "id": 4,
+        "nombre": "Prof. Luis Solá",
+        "tipo": "profesor",
+        "fecha_alta": "2023-09-01"
+      },
+      {
+        "id": 5,
+        "nombre": "Bibliotecaria María",
+        "tipo": "personal",
+        "fecha_alta": "2022-09-01"
+      }
+    ],
+    "prestamos": [
+      {
+        "id": 1,
+        "libro_id": 1,
+        "usuario_id": 1,
+        "fecha_prestamo": "2024-09-10",
+        "fecha_devolucion": "2024-09-24",
+        "devuelto": true
+      },
+      {
+        "id": 2,
+        "libro_id": 4,
+        "usuario_id": 2,
+        "fecha_prestamo": "2024-09-12",
+        "fecha_devolucion": "2024-09-26",
+        "devuelto": true
+      },
+      {
+        "id": 3,
+        "libro_id": 5,
+        "usuario_id": 3,
+        "fecha_prestamo": "2024-09-15",
+        "fecha_devolucion": "2024-09-29",
+        "devuelto": false
+      },
+      {
+        "id": 4,
+        "libro_id": 2,
+        "usuario_id": 1,
+        "fecha_prestamo": "2024-09-18",
+        "fecha_devolucion": "2024-10-02",
+        "devuelto": false
+      },
+      {
+        "id": 5,
+        "libro_id": 3,
+        "usuario_id": 4,
+        "fecha_prestamo": "2024-09-20",
+        "fecha_devolucion": "2024-10-04",
+        "devuelto": true
+      },
+      {
+        "id": 6,
+        "libro_id": 7,
+        "usuario_id": 2,
+        "fecha_prestamo": "2024-09-22",
+        "fecha_devolucion": "2024-10-06",
+        "devuelto": false
+      }
+    ]
+  },
+  "relaciones": [
+    {
+      "from": "libros.autor_id",
+      "to": "autores.id"
+    },
+    {
+      "from": "prestamos.libro_id",
+      "to": "libros.id"
+    },
+    {
+      "from": "prestamos.usuario_id",
+      "to": "usuarios.id"
+    }
+  ]
+}
