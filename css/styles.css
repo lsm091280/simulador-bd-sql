@@ -397,3 +397,18 @@ pre.editor-layer code { font: inherit; background: none; border: 0; padding: 0; 
   .layout { display: block; }
   .card { border-color: #999; }
 }
+
+/* ---------- Badges de la pestaña Crear BD (paleta completa tecnoLSM) ---------- */
+.badge-simple { border-color: var(--copper); color: var(--copper); }
+.badge-fk { border-color: var(--magenta); color: var(--magenta); }
+.badge-pk { border-color: var(--warn); color: var(--warn); }
+.badge-ok { border-color: var(--ok); color: var(--ok); }
+.badge-danger { border-color: var(--danger); color: var(--danger); }
+
+/* ---------- Encabezados de sección ---------- */
+.section-title { color: var(--copper); }
+.section-title iconify-icon { color: var(--copper); }
+
+/* ---------- Hover en botones secundarios ---------- */
+.btn-secondary:hover { border-color: var(--magenta); color: var(--magenta); }
+.btn-secondary:focus-visible { outline-color: var(--magenta); }
