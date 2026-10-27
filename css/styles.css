@@ -69,10 +69,10 @@ iconify-icon { font-size: 1.15em; vertical-align: -0.2em; flex: none; }
 /* ---------- Cabecera ---------- */
 .topbar { border-bottom: 1px solid var(--rule); background: var(--surface-2); }
 .topbar-inner {
-  max-width: 1180px; margin: 0 auto; padding: 14px 20px;
+  max-width: 100%; margin: 0 auto; padding: 14px 20px;
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px;
 }
-.brand { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 16px; }
+.brand { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 16px; }
 .wordmark { font: 600 22px/1 var(--font-mono); color: var(--ink); letter-spacing: -.01em; }
 .wordmark b { color: var(--accent); font-weight: 600; }
 .brand h1 { font-size: 22px; font-weight: 700; }
@@ -105,7 +105,7 @@ iconify-icon { font-size: 1.15em; vertical-align: -0.2em; flex: none; }
 /* ---------- Estructura ---------- */
 .layout {
   flex: 1;
-  width: 100%; max-width: 1180px; margin: 0 auto; padding: 20px 20px 56px;
+  width: 100%; max-width: 100%; margin: 0 auto; padding: 20px 20px 56px;
   display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 20px; align-items: start;
 }
 .col-main, .col-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
