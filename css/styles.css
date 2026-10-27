@@ -270,7 +270,7 @@ pre.editor-layer code { font: inherit; background: none; border: 0; padding: 0; 
   margin-bottom: 16px; padding-right: 40px;
 }
 .er-modal-body { overflow: auto; }
-.er-svg-modal { width: 100%; height: auto; min-width: 1200px; display: block; }
+.er-svg-modal { width: 100%; height: auto; display: block; }
 
 .er-wrap { position: relative; overflow-x: auto; }
 .er-svg { width: 100%; height: auto; min-width: 300px; display: block; }

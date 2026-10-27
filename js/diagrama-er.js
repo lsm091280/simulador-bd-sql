@@ -23,7 +23,8 @@
   }
 
   /** Construye el SVG del diagrama y lo devuelve. */
-  function buildSvg(db, highlight) {
+  function buildSvg(db, highlight, scale) {
+    scale = scale || 1;
     highlight = (highlight || []).map(function (t) { return t.toLowerCase(); });
     var names = db.tableNames();
     var rels = (db.relaciones || []).map(function (r) { return { from: parseRef(r.from), to: parseRef(r.to) }; });
@@ -51,10 +52,12 @@
     var height = acc - GAP_Y + PAD;
 
     var svg = el('svg', {
-      viewBox: '0 0 ' + width + ' ' + height,
-      class: 'er-svg',
+      viewBox: '0 0 ' + (width / scale) + ' ' + (height / scale),
+      class: 'er-svg' + (scale > 1 ? ' er-svg-modal' : ''),
       role: 'img',
-      'aria-label': 'Diagrama entidad-relación de la base de datos ' + db.nombre
+      'aria-label': 'Diagrama entidad-relación de la base de datos ' + db.nombre,
+      width: scale > 1 ? width : undefined,
+      height: scale > 1 ? height : undefined
     });
 
     function colY(t, colName) {
@@ -144,8 +147,7 @@
     var body = document.createElement('div');
     body.className = 'er-modal-body';
 
-    var svg = buildSvg(db, highlight);
-    svg.classList.add('er-svg-modal');
+    var svg = buildSvg(db, highlight, 2);
     body.appendChild(svg);
 
     modal.appendChild(closeBtn);
