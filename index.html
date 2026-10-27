@@ -61,6 +61,12 @@
         <button class="tab is-active" role="tab" id="tab-libre" aria-selected="true" aria-controls="panel-libre" data-tab="libre" type="button">
           <iconify-icon icon="mdi:code-braces" aria-hidden="true"></iconify-icon> Práctica libre
         </button>
+        <button class="tab" role="tab" id="tab-teoria" aria-selected="false" aria-controls="panel-teoria" data-tab="teoria" type="button" tabindex="-1">
+          <iconify-icon icon="mdi:book-open-page-variant-outline" aria-hidden="true"></iconify-icon> Teoría DDL
+        </button>
+        <button class="tab" role="tab" id="tab-crear" aria-selected="false" aria-controls="panel-crear" data-tab="crear" type="button" tabindex="-1">
+          <iconify-icon icon="mdi:database-cog-outline" aria-hidden="true"></iconify-icon> Crear BD / Mis tablas
+        </button>
         <button class="tab" role="tab" id="tab-ejemplos" aria-selected="false" aria-controls="panel-ejemplos" data-tab="ejemplos" type="button" tabindex="-1">
           <iconify-icon icon="mdi:lightbulb-on-outline" aria-hidden="true"></iconify-icon> Ejemplos guiados
         </button>
@@ -70,7 +76,213 @@
       </div>
 
       <div id="panel-libre" class="tab-panel card" role="tabpanel" aria-labelledby="tab-libre">
-        <p class="muted">Práctica libre: prueba lo que quieras. Los ejemplos de la pestaña «Ejemplos guiados» te dan ideas por donde empezar. Las instrucciones <code>INSERT</code>, <code>UPDATE</code> y <code>DELETE</code> modifican los datos solo en tu navegador: puedes volver a empezar con «Restaurar datos originales».</p>
+        <p class="muted">Práctica libre: prueba lo que quieras. Puedes escribir consultas <code>SELECT</code>, sentencias de manipulación <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, o diseñar tu propia estructura con <code>CREATE TABLE</code>, <code>ALTER TABLE</code> y <code>DROP TABLE</code>. Los cambios solo existen en la memoria de tu navegador durante esta sesión: pulsa «Restaurar datos originales» si deseas volver al estado inicial.</p>
+      </div>
+
+      <!-- ===== Pestaña Teoría DDL ===== -->
+      <div id="panel-teoria" class="tab-panel card" role="tabpanel" aria-labelledby="tab-teoria" hidden>
+        <h2 class="card-title"><iconify-icon icon="mdi:school-outline" aria-hidden="true"></iconify-icon> Guía rápida de diseño y DDL (2º Bachillerato)</h2>
+        <p class="muted">El lenguaje <strong>DDL</strong> (<em>Data Definition Language</em>) permite definir y alterar la estructura de las bases de datos (crear, modificar y borrar tablas). Aprende los conceptos y pulsa «Cargar en editor» para probar cada ejemplo.</p>
+
+        <div class="teoria-grid">
+          <!-- 1. BD y Tablas -->
+          <article class="teoria-card">
+            <h3>1. Base de datos, tablas, filas y columnas</h3>
+            <p>Una <strong>base de datos</strong> es un almacén estructurado de datos. La información se divide en <strong>tablas</strong> temáticas (ej: <code>alumnos</code>, <code>asignaturas</code>). Cada <strong>fila</strong> (registro) representa un elemento concreto y cada <strong>columna</strong> (campo) representa una propiedad de un tipo determinado:</p>
+            <ul class="teoria-list">
+              <li><code>INTEGER</code>: Números enteros (ej: 1, 42, -5).</li>
+              <li><code>TEXT</code>: Cadenas de caracteres o texto (ej: 'Ana', '2º Bach').</li>
+              <li><code>REAL</code>: Números decimales (ej: 8.75, 3.14).</li>
+              <li><code>BOOLEAN</code>: Valores de verdad (<code>TRUE</code> o <code>FALSE</code>).</li>
+            </ul>
+          </article>
+
+          <!-- 2. Claves -->
+          <article class="teoria-card">
+            <h3>2. Clave primaria (PRIMARY KEY)</h3>
+            <p>Es la columna que identifica de manera única a cada fila de la tabla. Sus valores nunca pueden repetirse ni ser nulos (<code>NULL</code>). Habitualmente se llama <code>id</code>.</p>
+            <pre class="code-block"><code>CREATE TABLE cursos (
+  id INTEGER PRIMARY KEY,
+  nombre TEXT NOT NULL
+);</code></pre>
+            <button class="btn btn-small btn-load-teoria" data-sql="CREATE TABLE cursos (&#10;  id INTEGER PRIMARY KEY,&#10;  nombre TEXT NOT NULL&#10;);" type="button">
+              <iconify-icon icon="mdi:code-tags" aria-hidden="true"></iconify-icon> Cargar en editor
+            </button>
+          </article>
+
+          <!-- 3. Relaciones y FK -->
+          <article class="teoria-card teoria-card-wide">
+            <h3>3. Clave foránea (FOREIGN KEY) y Relación 1 a N</h3>
+            <p>Una <strong>clave foránea</strong> es una columna en una tabla hija que guarda la clave primaria de una tabla padre, estableciendo una relación entre ambas. En una relación <strong>1 a N</strong>, un registro padre puede tener muchos registros hijos (un alumno tiene muchas notas), pero cada registro hijo pertenece a un único padre.</p>
+
+            <!-- Diagrama visual SVG educativo 1:N -->
+            <div class="teoria-diagram-wrap" aria-label="Diagrama visual de una relación 1 a N entre alumnos y notas">
+              <svg viewBox="0 0 680 190" class="teoria-rel-svg" role="img" aria-label="Relación 1 a N: alumnos a notas">
+                <!-- Tabla Padre: alumnos -->
+                <g class="diag-table" transform="translate(20, 20)">
+                  <rect x="0" y="0" width="220" height="150" rx="8" class="er-box"></rect>
+                  <rect x="0" y="0" width="220" height="32" rx="8" fill="var(--surface-2)"></rect>
+                  <line x1="0" y1="32" x2="220" y2="32" class="er-sep"></line>
+                  <text x="12" y="21" class="er-title">alumnos (Tabla padre)</text>
+                  <text x="12" y="56" class="er-col"><tspan class="er-pk">PK</tspan> id <tspan class="er-type">INTEGER</tspan></text>
+                  <text x="12" y="84" class="er-col">nombre <tspan class="er-type">TEXT</tspan></text>
+                  <text x="12" y="112" class="er-col">curso <tspan class="er-type">TEXT</tspan></text>
+                  <text x="12" y="140" class="er-col">grupo <tspan class="er-type">TEXT</tspan></text>
+                </g>
+
+                <!-- Conexión 1:N -->
+                <g class="diag-line">
+                  <path d="M 240 56 C 340 56, 340 84, 440 84" class="er-line" fill="none" stroke-width="2"></path>
+                  <circle cx="240" cy="56" r="4" fill="var(--warn)"></circle>
+                  <polygon points="440,84 430,79 430,89" fill="var(--magenta)"></polygon>
+                  <!-- Etiquetas de cardinalidad con subíndices -->
+                  <text x="250" y="48" class="er-card" fill="var(--warn)">1 <tspan baseline-shift="sub" font-size="9">(PK)</tspan></text>
+                  <text x="408" y="76" class="er-card" fill="var(--magenta)">N <tspan baseline-shift="sub" font-size="9">(FK)</tspan></text>
+                  <text x="340" y="145" text-anchor="middle" class="diag-legend" fill="var(--ink)">
+                    Relación 1 a N: notas.alumno<tspan baseline-shift="sub">id</tspan> apunta a alumnos.id<tspan baseline-shift="sub">PK</tspan>
+                  </text>
+                </g>
+
+                <!-- Tabla Hija: notas -->
+                <g class="diag-table" transform="translate(440, 20)">
+                  <rect x="0" y="0" width="220" height="150" rx="8" class="er-box"></rect>
+                  <rect x="0" y="0" width="220" height="32" rx="8" fill="var(--surface-2)"></rect>
+                  <line x1="0" y1="32" x2="220" y2="32" class="er-sep"></line>
+                  <text x="12" y="21" class="er-title">notas (Tabla hija)</text>
+                  <text x="12" y="56" class="er-col"><tspan class="er-pk">PK</tspan> id <tspan class="er-type">INTEGER</tspan></text>
+                  <text x="12" y="84" class="er-col"><tspan class="er-fk">FK</tspan> alumno_id <tspan class="er-type">INTEGER</tspan></text>
+                  <text x="12" y="112" class="er-col">asignatura <tspan class="er-type">TEXT</tspan></text>
+                  <text x="12" y="140" class="er-col">nota <tspan class="er-type">REAL</tspan></text>
+                </g>
+              </svg>
+            </div>
+
+            <pre class="code-block"><code>CREATE TABLE notas (
+  id INTEGER PRIMARY KEY,
+  alumno_id INTEGER,
+  asignatura TEXT,
+  nota REAL,
+  FOREIGN KEY (alumno_id) REFERENCES alumnos(id)
+);</code></pre>
+            <button class="btn btn-small btn-load-teoria" data-sql="CREATE TABLE notas (&#10;  id INTEGER PRIMARY KEY,&#10;  alumno_id INTEGER,&#10;  asignatura TEXT,&#10;  nota REAL,&#10;  FOREIGN KEY (alumno_id) REFERENCES alumnos(id)&#10;);" type="button">
+              <iconify-icon icon="mdi:code-tags" aria-hidden="true"></iconify-icon> Cargar en editor
+            </button>
+          </article>
+
+          <!-- 4. ALTER TABLE -->
+          <article class="teoria-card">
+            <h3>4. ALTER TABLE: modificar estructura</h3>
+            <p>Sirve para alterar la estructura de una tabla existente sin perder sus datos:</p>
+            <ul class="teoria-list">
+              <li><strong>ADD COLUMN</strong>: añade una nueva columna (con valor <code>NULL</code> por defecto para las filas previas).</li>
+              <li><strong>DROP COLUMN</strong>: elimina una columna (solo si no es PK ni forma parte de una FK).</li>
+            </ul>
+            <pre class="code-block"><code>-- Añadir columna de correo electrónico
+ALTER TABLE alumnos ADD COLUMN email TEXT;
+
+-- Eliminar la columna añadida
+ALTER TABLE alumnos DROP COLUMN email;</code></pre>
+            <button class="btn btn-small btn-load-teoria" data-sql="ALTER TABLE alumnos ADD COLUMN email TEXT;" type="button">
+              <iconify-icon icon="mdi:code-tags" aria-hidden="true"></iconify-icon> Cargar ADD COLUMN
+            </button>
+          </article>
+
+          <!-- 5. DROP TABLE -->
+          <article class="teoria-card">
+            <h3>5. DROP TABLE: borrar tablas</h3>
+            <p>Elimina por completo una tabla y todos los registros que contiene:</p>
+            <pre class="code-block"><code>DROP TABLE test;</code></pre>
+            <p class="muted small">¡Ojo! No podrás eliminar una tabla padre si existen otras tablas con claves foráneas apuntando hacia ella.</p>
+            <button class="btn btn-small btn-load-teoria" data-sql="DROP TABLE test;" type="button">
+              <iconify-icon icon="mdi:code-tags" aria-hidden="true"></iconify-icon> Cargar DROP TABLE
+            </button>
+          </article>
+
+          <!-- 6. DML: INSERT, UPDATE, DELETE -->
+          <article class="teoria-card">
+            <h3>6. INSERT, UPDATE y DELETE (DML)</h3>
+            <p>Una vez definida la estructura con DDL, gestionamos sus registros:</p>
+            <pre class="code-block"><code>-- Insertar un alumno
+INSERT INTO alumnos (id, nombre, apellidos, curso, grupo)
+VALUES (31, 'Marcos', 'Pérez Gil', '2º Bach', 'A');
+
+-- Modificar datos
+UPDATE alumnos SET grupo = 'B' WHERE id = 31;
+
+-- Borrar datos
+DELETE FROM alumnos WHERE id = 31;</code></pre>
+            <button class="btn btn-small btn-load-teoria" data-sql="INSERT INTO alumnos (id, nombre, apellidos, curso, grupo)&#10;VALUES (31, 'Marcos', 'Pérez Gil', '2º Bach', 'A');" type="button">
+              <iconify-icon icon="mdi:code-tags" aria-hidden="true"></iconify-icon> Cargar INSERT
+            </button>
+          </article>
+
+          <!-- 7. Integridad referencial -->
+          <article class="teoria-card teoria-card-alert">
+            <h3><iconify-icon icon="mdi:shield-check-outline" aria-hidden="true"></iconify-icon> 7. Integridad referencial (Regla de oro)</h3>
+            <p>La <strong>integridad referencial</strong> garantiza que las relaciones entre tablas siempre sean coherentes:</p>
+            <ul class="teoria-list">
+              <li><strong>Al insertar/modificar un hijo</strong>: el valor de su <code>FOREIGN KEY</code> debe existir en la tabla padre (no puede haber registros huérfanos).</li>
+              <li><strong>Al borrar/modificar un padre</strong>: no se permite eliminar una fila padre si aún existen filas hijas que la referencian.</li>
+              <li><strong>Al borrar una tabla (DROP TABLE)</strong>: debes borrar primero las tablas hijas antes que la tabla padre.</li>
+            </ul>
+            <p class="small">El simulador comprueba estas reglas y emitirá un mensaje explicativo si intentas violar la integridad.</p>
+          </article>
+        </div>
+      </div>
+
+      <!-- ===== Pestaña Crear BD / Mis tablas ===== -->
+      <div id="panel-crear" class="tab-panel card" role="tabpanel" aria-labelledby="tab-crear" hidden>
+        <div class="panel-crear-header">
+          <div>
+            <h2 class="card-title"><iconify-icon icon="mdi:database-cog-outline" aria-hidden="true"></iconify-icon> Mis tablas y creación de bases de datos</h2>
+            <p class="muted">Diseña tus propias tablas con DDL, comprueba sus columnas y restricciones, y exporta o importa tu trabajo completo en formato <code>.sql</code>.</p>
+          </div>
+          <div class="panel-crear-actions">
+            <button id="btn-crear-export-db" class="btn btn-primary" type="button">
+              <iconify-icon icon="mdi:database-export-outline" aria-hidden="true"></iconify-icon> Exportar mi BD (.sql)
+            </button>
+            <button id="btn-crear-import-db" class="btn" type="button">
+              <iconify-icon icon="mdi:database-import-outline" aria-hidden="true"></iconify-icon> Importar BD (.sql)
+            </button>
+          </div>
+        </div>
+
+        <!-- Plantillas rápidas -->
+        <div class="plantillas-box">
+          <h3 class="plantillas-title"><iconify-icon icon="mdi:lightning-bolt-outline" aria-hidden="true"></iconify-icon> Plantillas rápidas para empezar:</h3>
+          <div class="plantillas-btns">
+            <button id="btn-plantilla-simple" class="btn btn-small" type="button">
+              <iconify-icon icon="mdi:table-plus" aria-hidden="true"></iconify-icon> Tabla simple (profesores)
+            </button>
+            <button id="btn-plantilla-relacion" class="btn btn-small" type="button">
+              <iconify-icon icon="mdi:vector-polyline-plus" aria-hidden="true"></iconify-icon> Tabla con FK (calificaciones)
+            </button>
+            <button id="btn-plantilla-insert" class="btn btn-small" type="button">
+              <iconify-icon icon="mdi:database-arrow-down-outline" aria-hidden="true"></iconify-icon> Insertar datos de prueba
+            </button>
+          </div>
+        </div>
+
+        <!-- Sección de tablas creadas por el alumno -->
+        <div class="mis-tablas-section">
+          <div class="mis-tablas-header">
+            <h3>Tablas creadas por el alumno</h3>
+            <span id="mis-tablas-contador" class="badge">0 tablas creadas</span>
+          </div>
+          <div id="mis-tablas-vacio" class="mis-tablas-vacio">
+            <iconify-icon icon="mdi:table-furniture" aria-hidden="true"></iconify-icon>
+            <p><strong>Aún no has creado tablas propias en esta sesión.</strong></p>
+            <p class="muted small">Escribe una sentencia <code>CREATE TABLE nombre (id INTEGER PRIMARY KEY, ...)</code> en el editor o pulsa una de las plantillas rápidas de arriba.</p>
+          </div>
+          <div id="mis-tablas-lista" class="mis-tablas-grid"></div>
+        </div>
+
+        <!-- Sección de tablas del sistema / ejemplo -->
+        <details class="card collapsible tablas-sistema-card" id="tablas-sistema-details">
+          <summary class="card-title"><iconify-icon icon="mdi:chevron-down" class="chev" aria-hidden="true"></iconify-icon> Ver tablas de ejemplo precocinadas (<span id="tablas-sistema-count">0</span>)</summary>
+          <p class="muted small">Estas tablas pertenecen a la base de datos precocinada activa. Puedes consultarlas o relacionar tus tablas con ellas.</p>
+          <div id="tablas-sistema-lista" class="tablas-sistema-grid"></div>
+        </details>
       </div>
 
       <div id="panel-ejemplos" class="tab-panel card" role="tabpanel" aria-labelledby="tab-ejemplos" hidden>
@@ -135,6 +347,14 @@
           <button id="btn-export-csv" class="btn" type="button" disabled>
             <iconify-icon icon="mdi:file-delimited-outline" aria-hidden="true"></iconify-icon> Exportar resultados
           </button>
+          <span class="toolbar-sep" aria-hidden="true"></span>
+          <button id="btn-export-db" class="btn" type="button" title="Exportar la base de datos (CREATE TABLE + INSERT) a un archivo .sql">
+            <iconify-icon icon="mdi:database-export-outline" aria-hidden="true"></iconify-icon> Exportar mi BD (.sql)
+          </button>
+          <button id="btn-import-db" class="btn" type="button" title="Importar sentencias desde un archivo .sql a la base de datos">
+            <iconify-icon icon="mdi:database-import-outline" aria-hidden="true"></iconify-icon> Importar BD (.sql)
+          </button>
+          <input id="file-import-db" type="file" accept=".sql,.txt,text/plain" hidden>
           <button id="btn-restore" class="btn" type="button">
             <iconify-icon icon="mdi:database-refresh-outline" aria-hidden="true"></iconify-icon> Restaurar datos originales
           </button>

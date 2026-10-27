@@ -150,6 +150,7 @@
       el.btnExportCsv.disabled = true;
       setMsg('info', 'information-outline', 'Base de datos «' + esc(BDS[key].label) + '» cargada. Escribe una consulta y pulsa «Ejecutar».');
       renderSummary();
+      renderMisTablas();
       state.erKey = '';
       updateER();
       renderEjemplos();
@@ -273,6 +274,7 @@
         '<p class="msg-title">Consulta ejecutada: ' + esc(res.message) + ' (' + fmtMs(res.ms) + ' ms)</p>' +
         '<p class="msg-hint">Los cambios solo existen en tu navegador. Usa «Restaurar datos originales» para volver al principio.</p>');
       renderSummary();
+      renderMisTablas();
     }
   }
 
@@ -303,6 +305,8 @@
     if (!state.db) return;
     state.db.reset();
     renderSummary();
+    renderMisTablas();
+    updateER();
     el.resultTable.textContent = '';
     state.lastResult = null;
     el.btnExportCsv.disabled = true;
@@ -336,16 +340,122 @@
   }
 
   /* ---------- Pestañas ---------- */
-  var TABS = ['libre', 'ejemplos', 'examen'];
+  var TABS = ['libre', 'teoria', 'crear', 'ejemplos', 'examen'];
   function switchTab(name, focusTab) {
     TABS.forEach(function (t) {
       var on = t === name;
       var tab = $('tab-' + t);
+      if (!tab) return;
       tab.classList.toggle('is-active', on);
       tab.setAttribute('aria-selected', on ? 'true' : 'false');
       tab.tabIndex = on ? 0 : -1;
-      $('panel-' + t).hidden = !on;
+      var panel = $('panel-' + t);
+      if (panel) panel.hidden = !on;
       if (on && focusTab) tab.focus();
+    });
+    if (name === 'crear') {
+      renderMisTablas();
+    }
+  }
+
+  /* ---------- Mis tablas ---------- */
+  function renderMisTablas() {
+    if (!state.db) return;
+    var userList = $('mis-tablas-lista');
+    var emptyBox = $('mis-tablas-vacio');
+    var counter = $('mis-tablas-contador');
+    var sisList = $('tablas-sistema-lista');
+    var sisCount = $('tablas-sistema-count');
+    if (!userList || !sisList) return;
+
+    var userTableNames = state.db.userTables ? Array.from(state.db.userTables) : [];
+    var allTableNames = state.db.tableNames();
+    var sysTableNames = allTableNames.filter(function (t) { return userTableNames.indexOf(t) < 0; });
+
+    counter.textContent = plural(userTableNames.length, 'tabla creada', 'tablas creadas');
+    emptyBox.hidden = userTableNames.length > 0;
+    userList.textContent = '';
+
+    function createTableCard(t, isUser) {
+      var card = document.createElement('div');
+      card.className = 'tabla-card';
+      var rowsCount = (state.db.tables[t] || []).length;
+      var sch = state.db.schema[t] || [];
+
+      var head = '<div class="tabla-card-head">' +
+        '<h4 class="tabla-card-title">' + esc(t) + '</h4>' +
+        '<span class="badge">' + plural(rowsCount, 'fila', 'filas') + '</span>' +
+        '</div>';
+
+      var colsHtml = '<div class="tabla-card-cols">';
+      sch.forEach(function (c) {
+        var badges = '';
+        if (c.pk) badges += '<span class="pk-label">PK</span> ';
+        var isFk = (state.db.relaciones || []).some(function (r) {
+          return r.from.toLowerCase() === (t + '.' + c.name).toLowerCase();
+        });
+        if (isFk) badges += '<span class="fk-label">FK</span> ';
+        colsHtml += '<div class="tabla-card-col"><span>' + badges + esc(c.name) + '</span><span class="muted">' + esc(c.type) + '</span></div>';
+      });
+      colsHtml += '</div>';
+
+      var actions = document.createElement('div');
+      actions.className = 'tabla-card-actions';
+
+      var btnSelect = document.createElement('button');
+      btnSelect.type = 'button';
+      btnSelect.className = 'btn btn-small';
+      btnSelect.innerHTML = icon('table-search') + ' Ver datos';
+      btnSelect.addEventListener('click', function () {
+        setEditor('SELECT * FROM ' + t + ';', true);
+        execute();
+        el.editorCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+      actions.appendChild(btnSelect);
+
+      var btnInsert = document.createElement('button');
+      btnInsert.type = 'button';
+      btnInsert.className = 'btn btn-small';
+      btnInsert.innerHTML = icon('plus-circle-outline') + ' Insertar';
+      btnInsert.addEventListener('click', function () {
+        var colNames = sch.map(function (c) { return c.name; });
+        var valPlaceholders = sch.map(function (c) {
+          if (c.type === 'INTEGER' || c.type === 'REAL') return '0';
+          if (c.type === 'BOOLEAN') return 'TRUE';
+          return "'...'";
+        });
+        var sql = 'INSERT INTO ' + t + ' (' + colNames.join(', ') + ')\nVALUES (' + valPlaceholders.join(', ') + ');';
+        setEditor(sql, true);
+        el.editorCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+      actions.appendChild(btnInsert);
+
+      if (isUser) {
+        var btnDrop = document.createElement('button');
+        btnDrop.type = 'button';
+        btnDrop.className = 'btn btn-small';
+        btnDrop.style.color = 'var(--danger)';
+        btnDrop.innerHTML = icon('delete-outline') + ' Borrar';
+        btnDrop.addEventListener('click', function () {
+          setEditor('DROP TABLE ' + t + ';', true);
+          execute();
+        });
+        actions.appendChild(btnDrop);
+      }
+
+      card.innerHTML = head + colsHtml;
+      card.appendChild(actions);
+      return card;
+    }
+
+    userTableNames.forEach(function (t) {
+      userList.appendChild(createTableCard(t, true));
+    });
+
+    sisCount.textContent = String(sysTableNames.length);
+    sisList.textContent = '';
+    sysTableNames.forEach(function (t) {
+      sisList.appendChild(createTableCard(t, false));
     });
   }
 
@@ -533,6 +643,42 @@
     reader.readAsText(file);
   }
 
+  function exportDatabase() {
+    if (!state.db) return;
+    try {
+      var sql = SqlEngine.exportDatabaseToSql(state.db, false);
+      download('mi_base_de_datos.sql', sql, 'text/plain');
+      setMsg('ok', 'database-export-outline',
+        '<p class="msg-title">Base de datos exportada en «mi_base_de_datos.sql».</p>' +
+        '<p class="msg-hint">Contiene la definición completa de tablas (CREATE TABLE) y los datos actuales (INSERT INTO) en el orden de dependencias correcto.</p>');
+    } catch (err) {
+      reportError(err);
+    }
+  }
+
+  function importDatabase(file) {
+    if (!file || !state.db) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      var content = String(reader.result).replace(/\r\n/g, '\n');
+      try {
+        var res = SqlEngine.run(state.db, content);
+        renderSummary();
+        renderMisTablas();
+        updateER();
+        setMsg('ok', 'database-import-outline',
+          '<p class="msg-title">Base de datos importada correctamente desde «' + esc(file.name) + '».</p>' +
+          '<p class="msg-hint">' + esc(res.message) + ' (' + fmtMs(res.ms) + ' ms).</p>');
+      } catch (err) {
+        reportError(err);
+      }
+    };
+    reader.onerror = function () {
+      setMsg('error', 'alert-circle-outline', '<p class="msg-title">No se ha podido leer el archivo .sql.</p>');
+    };
+    reader.readAsText(file);
+  }
+
   function csvCell(v) {
     if (v === null || v === undefined) return '';
     var s = typeof v === 'number' ? String(Math.round(v * 10000) / 10000) : String(v);
@@ -574,6 +720,42 @@
       out.consultas.alumnos = q('instituto', 'SELECT * FROM alumnos');
       out.consultas.productos = q('tienda', 'SELECT * FROM productos');
       out.consultas.libros = q('biblioteca', 'SELECT * FROM libros');
+
+      /* Verificación de funcionalidades DDL y relaciones */
+      try {
+        var dbTest = SqlEngine.createDatabase({ nombre: 'Test DDL', tablas: {}, relaciones: [] });
+        SqlEngine.run(dbTest, 'CREATE TABLE test (id INTEGER PRIMARY KEY, nombre TEXT)');
+        out.ddl_create = dbTest.tableNames().indexOf('test') >= 0;
+
+        SqlEngine.run(dbTest, "INSERT INTO test VALUES (1, 'Ana')");
+        var selRes = SqlEngine.run(dbTest, "SELECT * FROM test");
+        out.ddl_select = selRes.rows.length === 1;
+
+        SqlEngine.run(dbTest, "DROP TABLE test");
+        out.ddl_drop = dbTest.tableNames().indexOf('test') === -1;
+
+        SqlEngine.run(dbTest, 'CREATE TABLE padres (id INTEGER PRIMARY KEY, nombre TEXT)');
+        SqlEngine.run(dbTest, 'CREATE TABLE hija (id INTEGER PRIMARY KEY, padre_id INTEGER, FOREIGN KEY (padre_id) REFERENCES padres(id))');
+        out.ddl_fk_create = dbTest.tableNames().indexOf('hija') >= 0;
+
+        var fkErrorCaught = false;
+        try {
+          SqlEngine.run(dbTest, 'INSERT INTO hija VALUES (1, 999)');
+        } catch (e) {
+          fkErrorCaught = true;
+        }
+        out.ddl_fk_violation = fkErrorCaught;
+
+        var expSql = SqlEngine.exportDatabaseToSql(dbTest);
+        out.ddl_export = expSql.indexOf('CREATE TABLE padres') >= 0 && expSql.indexOf('CREATE TABLE hija') >= 0;
+
+        var dbImport = SqlEngine.createDatabase({ nombre: 'ImportTest', tablas: {}, relaciones: [] });
+        SqlEngine.run(dbImport, expSql);
+        out.ddl_import = dbImport.tableNames().indexOf('padres') >= 0 && dbImport.tableNames().indexOf('hija') >= 0;
+      } catch (errDdl) {
+        out.errores.push('DDL verification error: ' + errDdl.message);
+      }
+
       if (window.console) console.log(JSON.stringify(out, null, 2));
       return out;
     });
@@ -613,6 +795,46 @@
     $('file-import').addEventListener('change', function (e) { importSql(e.target.files[0]); e.target.value = ''; });
     el.btnExportCsv.addEventListener('click', exportCsv);
     el.btnClearHist.addEventListener('click', function () { state.history = []; lsSet(LS.hist, '[]'); renderHistory(); });
+
+    var btnExpDb = $('btn-export-db');
+    if (btnExpDb) btnExpDb.addEventListener('click', exportDatabase);
+    var btnCrearExpDb = $('btn-crear-export-db');
+    if (btnCrearExpDb) btnCrearExpDb.addEventListener('click', exportDatabase);
+
+    var fileImpDb = $('file-import-db');
+    var btnImpDb = $('btn-import-db');
+    if (btnImpDb && fileImpDb) btnImpDb.addEventListener('click', function () { fileImpDb.click(); });
+    var btnCrearImpDb = $('btn-crear-import-db');
+    if (btnCrearImpDb && fileImpDb) btnCrearImpDb.addEventListener('click', function () { fileImpDb.click(); });
+    if (fileImpDb) fileImpDb.addEventListener('change', function (e) { importDatabase(e.target.files[0]); e.target.value = ''; });
+
+    var pSimple = $('btn-plantilla-simple');
+    if (pSimple) pSimple.addEventListener('click', function () {
+      setEditor('CREATE TABLE profesores (\n  id INTEGER PRIMARY KEY,\n  nombre TEXT NOT NULL,\n  departamento TEXT\n);', true);
+      el.editorCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+
+    var pRel = $('btn-plantilla-relacion');
+    if (pRel) pRel.addEventListener('click', function () {
+      setEditor('CREATE TABLE calificaciones (\n  id INTEGER PRIMARY KEY,\n  alumno_id INTEGER,\n  asignatura TEXT NOT NULL,\n  nota REAL,\n  FOREIGN KEY (alumno_id) REFERENCES alumnos(id)\n);', true);
+      el.editorCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+
+    var pIns = $('btn-plantilla-insert');
+    if (pIns) pIns.addEventListener('click', function () {
+      setEditor("INSERT INTO alumnos (id, nombre, apellidos, curso, grupo)\nVALUES (31, 'Marcos', 'Pérez Gil', '2º Bach', 'A');", true);
+      el.editorCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll('.btn-load-teoria'), function (btn) {
+      btn.addEventListener('click', function () {
+        var sql = btn.getAttribute('data-sql');
+        if (sql) {
+          setEditor(sql, true);
+          el.editorCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      });
+    });
 
     $('btn-comprobar').addEventListener('click', checkExam);
     $('btn-pista').addEventListener('click', showHint);

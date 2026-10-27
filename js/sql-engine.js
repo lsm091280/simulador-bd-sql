@@ -59,9 +59,11 @@
     'AND', 'OR', 'NOT', 'IN', 'LIKE', 'BETWEEN', 'IS', 'NULL', 'DISTINCT',
     'ASC', 'DESC', 'INSERT', 'INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE',
     'TRUE', 'FALSE', 'EXISTS', 'CASE', 'WHEN', 'THEN', 'ELSE', 'END',
-    'CREATE', 'DROP', 'ALTER', 'TABLE', 'UNION'
+    'CREATE', 'DROP', 'ALTER', 'TABLE', 'UNION',
+    'PRIMARY', 'KEY', 'FOREIGN', 'REFERENCES', 'ADD', 'COLUMN',
+    'INTEGER', 'INT', 'TEXT', 'VARCHAR', 'CHAR', 'REAL', 'FLOAT', 'DOUBLE', 'DECIMAL', 'BOOLEAN', 'BOOL', 'DATE'
   ]);
-  const STATEMENT_STARTS = ['SELECT', 'INSERT', 'UPDATE', 'DELETE'];
+  const STATEMENT_STARTS = ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'ALTER', 'DROP'];
   const AGG = new Set(['COUNT', 'SUM', 'AVG', 'MIN', 'MAX']);
   const SCALAR_FUNCS = ['UPPER', 'LOWER', 'LENGTH', 'ROUND', 'ABS', 'COALESCE', 'IFNULL',
     'SUBSTR', 'SUBSTRING', 'TRIM', 'CONCAT', 'YEAR', 'FLOOR', 'CEIL'];
@@ -191,11 +193,9 @@
         if (t.v === 'INSERT') return this.parseInsert();
         if (t.v === 'UPDATE') return this.parseUpdate();
         if (t.v === 'DELETE') return this.parseDelete();
-        if (t.v === 'CREATE' || t.v === 'DROP' || t.v === 'ALTER') {
-          throw new SqlError(
-            'En este simulador no se pueden crear, modificar ni borrar tablas (' + t.v + ').',
-            { line: t.line, detail: 'Las sentencias que definen la estructura (CREATE, ALTER, DROP) forman el lenguaje DDL. Aquí practicamos consultas (SELECT) y modificación de datos (INSERT, UPDATE, DELETE).' });
-        }
+        if (t.v === 'CREATE') return this.parseCreate();
+        if (t.v === 'ALTER') return this.parseAlter();
+        if (t.v === 'DROP') return this.parseDrop();
       }
       let hint = '';
       if (t.t === 'id') {
@@ -203,7 +203,7 @@
         if (c) hint = "¿Quisiste escribir '" + c + "'?";
       }
       throw new SqlError(
-        "Error de sintaxis en la línea " + t.line + ": una consulta debe empezar por SELECT, INSERT, UPDATE o DELETE (has escrito '" + tokText(t) + "').",
+        "Error de sintaxis en la línea " + t.line + ": una sentencia SQL debe empezar por SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER o DROP (has escrito '" + tokText(t) + "').",
         { line: t.line, detail: SYNTAX_DETAIL, hint: hint });
     }
 
@@ -531,6 +531,190 @@
       if (this.acceptKw('WHERE')) where = this.parseExpr();
       return { type: 'delete', table: table, where: where, line: tt.line };
     }
+
+    /* ----- DDL: CREATE / ALTER / DROP TABLE ----- */
+    parseType() {
+      const t = this.peek();
+      let typeName = 'TEXT';
+      if (t.t === 'kw' || t.t === 'id') {
+        typeName = this.next().v.toUpperCase();
+        if (this.acceptOp('(')) {
+          while (this.peek().t !== 'eof' && !this.isOp(')')) {
+            this.next();
+          }
+          this.expectOp(')', "')' después de la especificación de longitud del tipo");
+        }
+      } else {
+        throw this.err('un tipo de dato para la columna (INTEGER, TEXT, REAL, BOOLEAN, DATE)');
+      }
+
+      if (typeName === 'INT' || typeName === 'INTEGER') return 'INTEGER';
+      if (typeName === 'REAL' || typeName === 'FLOAT' || typeName === 'DOUBLE' || typeName === 'DECIMAL' || typeName === 'NUMERIC') return 'REAL';
+      if (typeName === 'BOOL' || typeName === 'BOOLEAN') return 'BOOLEAN';
+      if (typeName === 'DATE') return 'DATE';
+      return 'TEXT';
+    }
+
+    parseCreate() {
+      this.expectKw('CREATE');
+      this.expectKw('TABLE', 'TABLE');
+      const tt = this.peek();
+      let ifNotExists = false;
+      if (this.isKw('IF') && this.isKw('NOT', 1) && this.isKw('EXISTS', 2)) {
+        this.next(); this.next(); this.next();
+        ifNotExists = true;
+      }
+      const table = this.expectIdent('el nombre de la tabla');
+      this.tables.add(table.toLowerCase());
+      this.expectOp('(', "'(' después del nombre de la tabla");
+
+      const columns = [];
+      const foreignKeys = [];
+      let pkColName = null;
+
+      do {
+        // Restricción de tabla: PRIMARY KEY (col)
+        if (this.isKw('PRIMARY') && this.isKw('KEY', 1)) {
+          this.next(); this.next();
+          this.expectOp('(', "'(' después de PRIMARY KEY");
+          pkColName = this.expectIdent('el nombre de la columna para la clave primaria');
+          this.expectOp(')', "')' después de la columna clave primaria");
+          continue;
+        }
+
+        // Restricción de tabla: FOREIGN KEY (col) REFERENCES tabla(col)
+        if (this.isKw('FOREIGN') && this.isKw('KEY', 1)) {
+          this.next(); this.next();
+          this.expectOp('(', "'(' después de FOREIGN KEY");
+          const fromCol = this.expectIdent('el nombre de la columna para la clave foránea');
+          this.expectOp(')', "')' después de la columna clave foránea");
+          this.expectKw('REFERENCES', 'REFERENCES');
+          const toTable = this.expectIdent('el nombre de la tabla referenciada');
+          let toCol = 'id';
+          if (this.acceptOp('(')) {
+            toCol = this.expectIdent('el nombre de la columna referenciada');
+            this.expectOp(')', "')' después de la columna referenciada");
+          }
+          foreignKeys.push({ fromCol: fromCol, toTable: toTable, toCol: toCol });
+          continue;
+        }
+
+        // Definición de columna
+        const colName = this.expectIdent('el nombre de una columna');
+        const colType = this.parseType();
+        let isPk = false;
+        let notNull = false;
+
+        // Modificadores de columna (PRIMARY KEY, NOT NULL, REFERENCES...)
+        while (true) {
+          if (this.isKw('PRIMARY') && this.isKw('KEY', 1)) {
+            this.next(); this.next();
+            isPk = true;
+          } else if (this.isKw('NOT') && this.isKw('NULL', 1)) {
+            this.next(); this.next();
+            notNull = true;
+          } else if (this.acceptKw('NULL')) {
+            // Nullable por defecto
+          } else if (this.acceptKw('REFERENCES')) {
+            const toTable = this.expectIdent('el nombre de la tabla referenciada');
+            let toCol = 'id';
+            if (this.acceptOp('(')) {
+              toCol = this.expectIdent('el nombre de la columna referenciada');
+              this.expectOp(')', "')' después de la columna referenciada");
+            }
+            foreignKeys.push({ fromCol: colName, toTable: toTable, toCol: toCol });
+          } else {
+            break;
+          }
+        }
+
+        columns.push({ name: colName, type: colType, pk: isPk, notNull: notNull });
+      } while (this.acceptOp(','));
+
+      this.expectOp(')', "')' para cerrar la definición de columnas de la tabla");
+
+      if (pkColName) {
+        const found = columns.find(function (c) { return c.name.toLowerCase() === pkColName.toLowerCase(); });
+        if (!found) {
+          throw new SqlError("La columna '" + pkColName + "' especificada en PRIMARY KEY no existe en la tabla '" + table + "'", {
+            line: tt.line,
+            detail: "La clave primaria de la tabla debe ser una de las columnas definidas previamente."
+          });
+        }
+        found.pk = true;
+      }
+
+      if (!columns.length) {
+        throw new SqlError("La tabla '" + table + "' debe contener al menos una columna", {
+          line: tt.line,
+          detail: "Una tabla SQL necesita al menos una columna con su tipo de dato."
+        });
+      }
+
+      return {
+        type: 'create_table',
+        table: table,
+        columns: columns,
+        foreignKeys: foreignKeys,
+        ifNotExists: ifNotExists,
+        line: tt.line
+      };
+    }
+
+    parseAlter() {
+      this.expectKw('ALTER');
+      this.expectKw('TABLE', 'TABLE');
+      const tt = this.peek();
+      const table = this.expectIdent('el nombre de la tabla a modificar');
+      this.tables.add(table.toLowerCase());
+
+      if (this.acceptKw('ADD')) {
+        this.acceptKw('COLUMN');
+        const colName = this.expectIdent('el nombre de la nueva columna');
+        const colType = this.parseType();
+        return {
+          type: 'alter_table',
+          action: 'add_column',
+          table: table,
+          column: { name: colName, type: colType },
+          line: tt.line
+        };
+      }
+
+      if (this.acceptKw('DROP')) {
+        this.acceptKw('COLUMN');
+        const colName = this.expectIdent('el nombre de la columna a eliminar');
+        return {
+          type: 'alter_table',
+          action: 'drop_column',
+          table: table,
+          column: colName,
+          line: tt.line
+        };
+      }
+
+      throw this.err("ADD COLUMN o DROP COLUMN después de ALTER TABLE '" + table + "'",
+        "El comando ALTER TABLE permite añadir columnas (ADD COLUMN nombre tipo) o eliminarlas (DROP COLUMN nombre).");
+    }
+
+    parseDrop() {
+      this.expectKw('DROP');
+      this.expectKw('TABLE', 'TABLE');
+      const tt = this.peek();
+      let ifExists = false;
+      if (this.isKw('IF') && this.isKw('EXISTS', 1)) {
+        this.next(); this.next();
+        ifExists = true;
+      }
+      const table = this.expectIdent('el nombre de la tabla a borrar');
+      this.tables.add(table.toLowerCase());
+      return {
+        type: 'drop_table',
+        table: table,
+        ifExists: ifExists,
+        line: tt.line
+      };
+    }
   }
 
   /* ---------- Texto de expresiones (nombre por defecto de columnas) ---------- */
@@ -572,24 +756,38 @@
 
   function createDatabase(json) {
     const original = JSON.parse(JSON.stringify(json.tablas || json.tables || {}));
+    const originalRels = JSON.parse(JSON.stringify(json.relaciones || []));
     const db = {
       nombre: json.nombre || 'Base de datos',
-      relaciones: json.relaciones || [],
+      relaciones: JSON.parse(JSON.stringify(originalRels)),
       schema: {},
       tables: null,
       original: original,
-      reset: function () { this.tables = JSON.parse(JSON.stringify(this.original)); },
+      originalRelaciones: originalRels,
+      userTables: new Set(),
+      reset: function () {
+        this.tables = JSON.parse(JSON.stringify(this.original));
+        this.relaciones = JSON.parse(JSON.stringify(this.originalRelaciones));
+        this.userTables = new Set();
+        this.schema = {};
+        const self = this;
+        Object.keys(self.original).forEach(function (t) {
+          const names = [];
+          self.original[t].forEach(function (row) {
+            Object.keys(row).forEach(function (k) { if (names.indexOf(k) < 0) names.push(k); });
+          });
+          self.schema[t] = names.map(function (n) {
+            return {
+              name: n,
+              type: inferType(self.original[t].map(function (r) { return r[n]; })),
+              pk: n.toLowerCase() === 'id',
+              notNull: n.toLowerCase() === 'id'
+            };
+          });
+        });
+      },
       tableNames: function () { return Object.keys(this.schema); }
     };
-    Object.keys(original).forEach(function (t) {
-      const names = [];
-      original[t].forEach(function (row) {
-        Object.keys(row).forEach(function (k) { if (names.indexOf(k) < 0) names.push(k); });
-      });
-      db.schema[t] = names.map(function (n) {
-        return { name: n, type: inferType(original[t].map(function (r) { return r[n]; })) };
-      });
-    });
     db.reset();
     return db;
   }
@@ -1080,12 +1278,12 @@
     return { columns: items.map(function (i) { return i.name; }), rows: out };
   }
 
-  /* ---------- DML ---------- */
+  /* ---------- DML & DDL ---------- */
   function coerce(val, col) {
     if (val === null) return null;
     const bad = function (msg, detail) { return new SqlError(msg, { detail: detail }); };
     switch (col.type) {
-      case 'INTEGER': case 'DECIMAL': {
+      case 'INTEGER': case 'DECIMAL': case 'REAL': {
         if (typeof val === 'number') return val;
         if (typeof val === 'boolean') return val ? 1 : 0;
         if (typeof val === 'string' && val.trim() !== '' && !isNaN(val)) return Number(val);
@@ -1125,14 +1323,29 @@
     return col;
   }
 
+  function getTablePkCol(db, tname) {
+    const sch = db.schema[tname];
+    if (!sch) return null;
+    let pk = sch.find(function (c) { return Boolean(c.pk); });
+    if (!pk) pk = sch.find(function (c) { return c.name.toLowerCase() === 'id'; });
+    return pk || null;
+  }
+
   function plural(n, s, p) { return n + ' ' + (n === 1 ? s : p); }
 
   function execInsert(db, st) {
     const tname = resolveTable(db, st.table, st.line);
     const sch = db.schema[tname];
     const targets = st.columns ? st.columns.map(function (c) { return findSchemaCol(db, tname, c); }) : sch;
+    const pkCol = getTablePkCol(db, tname);
     const env = { cols: [], row: [], group: null, parent: null };
     const newRows = [];
+
+    // Claves foráneas salientes de esta tabla
+    const outgoingFks = (db.relaciones || []).filter(function (r) {
+      return r.from.split('.')[0].toLowerCase() === tname.toLowerCase();
+    });
+
     for (const tuple of st.rows) {
       if (tuple.length !== targets.length) {
         throw new SqlError('Se han indicado ' + tuple.length + ' valores pero hay ' + targets.length + ' columnas', {
@@ -1143,13 +1356,56 @@
       const obj = {};
       sch.forEach(function (c) { obj[c.name] = null; });
       tuple.forEach(function (ex, i) { obj[targets[i].name] = coerce(evalExpr(ex, env, db), targets[i]); });
-      const idCol = sch.find(function (c) { return c.name === 'id'; });
-      if (idCol && obj.id === null) {
+
+      // Autoincremento de ID si es nulo y se llama 'id'
+      if (pkCol && pkCol.name.toLowerCase() === 'id' && obj.id === null) {
         const all = db.tables[tname].concat(newRows);
         obj.id = all.reduce(function (m, r) { return typeof r.id === 'number' && r.id > m ? r.id : m; }, 0) + 1;
       }
+
+      // Restricción NOT NULL
+      sch.forEach(function (c) {
+        if (c.notNull && (obj[c.name] === null || obj[c.name] === undefined)) {
+          throw new SqlError("La columna '" + c.name + "' de la tabla '" + tname + "' no puede ser NULL (NOT NULL)", {
+            detail: "La columna fue definida como obligatoria y debe recibir un valor."
+          });
+        }
+      });
+
+      // Validación de PRIMARY KEY única
+      if (pkCol && obj[pkCol.name] !== null && obj[pkCol.name] !== undefined) {
+        const pkVal = obj[pkCol.name];
+        const all = db.tables[tname].concat(newRows);
+        if (all.some(function (r) { return r[pkCol.name] == pkVal; })) {
+          throw new SqlError("Violación de clave primaria (PRIMARY KEY) en la tabla '" + tname + "': ya existe un registro con " + pkCol.name + " = " + pkVal, {
+            detail: "La clave primaria debe ser única para cada fila. No se pueden insertar registros duplicados.",
+            hint: "Usa un valor diferente para '" + pkCol.name + "' o consulta los valores existentes."
+          });
+        }
+      }
+
+      // Validación de integridad referencial (FOREIGN KEY)
+      for (const fk of outgoingFks) {
+        const fromCol = fk.from.split('.')[1];
+        const toParts = fk.to.split('.');
+        const toTable = resolveTable(db, toParts[0], st.line);
+        const toCol = toParts[1];
+        const fkVal = obj[fromCol];
+        if (fkVal !== null && fkVal !== undefined) {
+          const parentRows = db.tables[toTable] || [];
+          const exists = parentRows.some(function (pr) { return pr[toCol] == fkVal; });
+          if (!exists) {
+            throw new SqlError("Violación de integridad referencial: el valor '" + fkVal + "' para la clave foránea '" + fromCol + "' no existe en la tabla padre '" + toTable + " (" + toCol + ")'", {
+              detail: "Una clave foránea (FOREIGN KEY) solo puede apuntar a registros que ya existan en la tabla padre. Inserta primero el registro en '" + toTable + "' o utiliza un valor válido.",
+              hint: "Verifica los valores disponibles en la tabla '" + toTable + "' con: SELECT " + toCol + " FROM " + toTable + ";"
+            });
+          }
+        }
+      }
+
       newRows.push(obj);
     }
+
     newRows.forEach(function (r) { db.tables[tname].push(r); });
     return { type: 'dml', kind: 'insert', affected: newRows.length, tables: [tname], message: 'Se ha(n) insertado ' + plural(newRows.length, 'fila', 'filas') + " en '" + tname + "'" };
   }
@@ -1159,13 +1415,82 @@
     const cols = tableCols(db, tname);
     const sch = db.schema[tname];
     const sets = st.sets.map(function (s) { return { col: findSchemaCol(db, tname, s.col), expr: s.expr }; });
+    const pkCol = getTablePkCol(db, tname);
     const changes = [];
+
     db.tables[tname].forEach(function (obj) {
       const row = sch.map(function (c) { return obj[c.name] === undefined ? null : obj[c.name]; });
       const env = { cols: cols, row: row, group: null, parent: null };
       if (st.where && !truthy(evalExpr(st.where, env, db))) return;
       changes.push({ obj: obj, vals: sets.map(function (s) { return coerce(evalExpr(s.expr, env, db), s.col); }) });
     });
+
+    // Validar cambios antes de aplicarlos
+    changes.forEach(function (ch) {
+      sets.forEach(function (s, i) {
+        const newVal = ch.vals[i];
+        const oldVal = ch.obj[s.col.name];
+
+        // 1. Clave primaria
+        if (pkCol && s.col.name.toLowerCase() === pkCol.name.toLowerCase()) {
+          if (newVal === null || newVal === undefined) {
+            throw new SqlError("La clave primaria '" + pkCol.name + "' en '" + tname + "' no puede ser NULL", {
+              detail: "Una clave primaria debe tener siempre un valor definido."
+            });
+          }
+          if (newVal != oldVal) {
+            const duplicate = db.tables[tname].some(function (r) {
+              return r !== ch.obj && r[pkCol.name] == newVal;
+            });
+            if (duplicate) {
+              throw new SqlError("Violación de clave primaria en '" + tname + "': ya existe otro registro con " + pkCol.name + " = " + newVal, {
+                detail: "La clave primaria debe ser única."
+              });
+            }
+            // Comprobar si tablas hijas apuntan al valor antiguo
+            const childRels = (db.relaciones || []).filter(function (r) {
+              return r.to.split('.')[0].toLowerCase() === tname.toLowerCase() &&
+                     r.to.split('.')[1].toLowerCase() === pkCol.name.toLowerCase();
+            });
+            for (const cr of childRels) {
+              const childTable = resolveTable(db, cr.from.split('.')[0], st.line);
+              const childCol = cr.from.split('.')[1];
+              const hasChild = (db.tables[childTable] || []).some(function (r) { return r[childCol] == oldVal; });
+              if (hasChild) {
+                throw new SqlError("No se puede modificar la clave primaria '" + pkCol.name + "' de " + oldVal + " a " + newVal + " porque está referenciada en la tabla '" + childTable + "'", {
+                  detail: "Integridad referencial: no puedes alterar el identificador de un padre si existen registros hijos que dependen de él."
+                });
+              }
+            }
+          }
+        }
+
+        // 2. Columna NOT NULL
+        if (s.col.notNull && (newVal === null || newVal === undefined)) {
+          throw new SqlError("La columna '" + s.col.name + "' de '" + tname + "' no admite valores NULL", {
+            detail: "La columna tiene una restricción NOT NULL."
+          });
+        }
+
+        // 3. Clave foránea
+        const fkRel = (db.relaciones || []).find(function (r) {
+          return r.from.split('.')[0].toLowerCase() === tname.toLowerCase() &&
+                 r.from.split('.')[1].toLowerCase() === s.col.name.toLowerCase();
+        });
+        if (fkRel && newVal !== null && newVal !== undefined && newVal != oldVal) {
+          const toParts = fkRel.to.split('.');
+          const toTable = resolveTable(db, toParts[0], st.line);
+          const toCol = toParts[1];
+          const exists = (db.tables[toTable] || []).some(function (pr) { return pr[toCol] == newVal; });
+          if (!exists) {
+            throw new SqlError("Violación de integridad referencial: el nuevo valor '" + newVal + "' para la clave foránea '" + s.col.name + "' no existe en la tabla '" + toTable + " (" + toCol + ")'", {
+              detail: "Una clave foránea solo puede hacer referencia a un registro existente en la tabla padre."
+            });
+          }
+        }
+      });
+    });
+
     changes.forEach(function (ch) { sets.forEach(function (s, i) { ch.obj[s.col.name] = ch.vals[i]; }); });
     return { type: 'dml', kind: 'update', affected: changes.length, tables: [tname], message: 'Se ha(n) modificado ' + plural(changes.length, 'fila', 'filas') + " en '" + tname + "'" };
   }
@@ -1175,14 +1500,304 @@
     const cols = tableCols(db, tname);
     const sch = db.schema[tname];
     const keep = [];
-    let removed = 0;
+    const toDelete = [];
+
     db.tables[tname].forEach(function (obj) {
       const row = sch.map(function (c) { return obj[c.name] === undefined ? null : obj[c.name]; });
       const env = { cols: cols, row: row, group: null, parent: null };
-      if (!st.where || truthy(evalExpr(st.where, env, db))) removed++; else keep.push(obj);
+      if (!st.where || truthy(evalExpr(st.where, env, db))) toDelete.push(obj);
+      else keep.push(obj);
     });
+
+    // Integridad referencial: validar si otras tablas referencian alguna de las filas a borrar
+    const childRels = (db.relaciones || []).filter(function (r) {
+      return r.to.split('.')[0].toLowerCase() === tname.toLowerCase();
+    });
+
+    if (childRels.length > 0 && toDelete.length > 0) {
+      for (const cr of childRels) {
+        const childTable = resolveTable(db, cr.from.split('.')[0], st.line);
+        const childCol = cr.from.split('.')[1];
+        const parentCol = cr.to.split('.')[1];
+        const childRows = db.tables[childTable] || [];
+
+        for (const parentObj of toDelete) {
+          const parentVal = parentObj[parentCol];
+          if (parentVal === null || parentVal === undefined) continue;
+          const blocked = childRows.some(function (crow) { return crow[childCol] == parentVal; });
+          if (blocked) {
+            throw new SqlError("Violación de integridad referencial: no se puede borrar la fila con " + parentCol + " = " + parentVal + " de '" + tname + "' porque está referenciada en la tabla '" + childTable + "' (columna '" + childCol + "')", {
+              detail: "Integridad referencial: no puedes eliminar un registro padre mientras existan registros hijos que dependen de él mediante una clave foránea (FOREIGN KEY).",
+              hint: "Borra primero los registros relacionados en la tabla '" + childTable + "' que tengan " + childCol + " = " + parentVal + "."
+            });
+          }
+        }
+      }
+    }
+
     db.tables[tname] = keep;
-    return { type: 'dml', kind: 'delete', affected: removed, tables: [tname], message: 'Se ha(n) borrado ' + plural(removed, 'fila', 'filas') + " de '" + tname + "'" };
+    return { type: 'dml', kind: 'delete', affected: toDelete.length, tables: [tname], message: 'Se ha(n) borrado ' + plural(toDelete.length, 'fila', 'filas') + " de '" + tname + "'" };
+  }
+
+  function execCreateTable(db, st) {
+    const existing = db.tableNames().find(function (n) { return n.toLowerCase() === st.table.toLowerCase(); });
+    if (existing) {
+      if (st.ifNotExists) {
+        return { type: 'ddl', kind: 'create_table', table: existing, tables: [existing], message: "La tabla '" + existing + "' ya existe" };
+      }
+      throw new SqlError("La tabla '" + st.table + "' ya existe", {
+        detail: "No se puede crear una tabla con un nombre que ya está en uso. Elige otro nombre o usa DROP TABLE si deseas reemplazarla.",
+        hint: "Tablas disponibles actualmente: " + db.tableNames().join(', ') + "."
+      });
+    }
+
+    // Validar nombres de columnas únicos
+    const colNames = new Set();
+    st.columns.forEach(function (c) {
+      const lower = c.name.toLowerCase();
+      if (colNames.has(lower)) {
+        throw new SqlError("Columna duplicada '" + c.name + "' en la tabla '" + st.table + "'", {
+          detail: "Cada columna de una tabla debe tener un nombre único."
+        });
+      }
+      colNames.add(lower);
+    });
+
+    // Validar claves foráneas
+    if (!db.relaciones) db.relaciones = [];
+    st.foreignKeys.forEach(function (fk) {
+      const colExists = st.columns.find(function (c) { return c.name.toLowerCase() === fk.fromCol.toLowerCase(); });
+      if (!colExists) {
+        throw new SqlError("La columna '" + fk.fromCol + "' especificada en la clave foránea no existe en la tabla '" + st.table + "'", {
+          detail: "La columna indicada en FOREIGN KEY (" + fk.fromCol + ") debe estar definida entre las columnas de la tabla."
+        });
+      }
+      const refTableReal = resolveTable(db, fk.toTable, st.line);
+      findSchemaCol(db, refTableReal, fk.toCol);
+    });
+
+    // Registrar la tabla en db.schema y db.tables
+    db.schema[st.table] = st.columns.map(function (c) {
+      return { name: c.name, type: c.type, pk: Boolean(c.pk), notNull: Boolean(c.notNull) };
+    });
+    db.tables[st.table] = [];
+    if (!db.userTables) db.userTables = new Set();
+    db.userTables.add(st.table);
+
+    // Registrar relaciones
+    st.foreignKeys.forEach(function (fk) {
+      const refTableReal = resolveTable(db, fk.toTable, st.line);
+      const refCol = findSchemaCol(db, refTableReal, fk.toCol);
+      db.relaciones.push({
+        from: st.table + '.' + fk.fromCol,
+        to: refTableReal + '.' + refCol.name
+      });
+    });
+
+    return {
+      type: 'ddl',
+      kind: 'create_table',
+      table: st.table,
+      tables: [st.table],
+      message: "Tabla '" + st.table + "' creada correctamente con " + plural(st.columns.length, 'columna', 'columnas')
+    };
+  }
+
+  function execAlterTable(db, st) {
+    const tname = resolveTable(db, st.table, st.line);
+    const sch = db.schema[tname];
+
+    if (st.action === 'add_column') {
+      const exists = sch.find(function (c) { return c.name.toLowerCase() === st.column.name.toLowerCase(); });
+      if (exists) {
+        throw new SqlError("La columna '" + st.column.name + "' ya existe en la tabla '" + tname + "'", {
+          detail: "No se puede añadir una columna que ya existe."
+        });
+      }
+      sch.push({ name: st.column.name, type: st.column.type, pk: false, notNull: false });
+      (db.tables[tname] || []).forEach(function (row) { row[st.column.name] = null; });
+      return {
+        type: 'ddl',
+        kind: 'alter_table',
+        table: tname,
+        tables: [tname],
+        message: "Columna '" + st.column.name + "' (" + st.column.type + ") añadida a la tabla '" + tname + "'"
+      };
+    }
+
+    if (st.action === 'drop_column') {
+      const colIdx = sch.findIndex(function (c) { return c.name.toLowerCase() === String(st.column).toLowerCase(); });
+      if (colIdx < 0) {
+        throw new SqlError("La columna '" + st.column + "' no existe en la tabla '" + tname + "'", {
+          hint: "Columnas disponibles en '" + tname + "': " + sch.map(function (c) { return c.name; }).join(', ') + "."
+        });
+      }
+      const col = sch[colIdx];
+      if (col.pk || col.name.toLowerCase() === 'id') {
+        throw new SqlError("No se puede eliminar la columna '" + col.name + "' porque es clave primaria (PRIMARY KEY)", {
+          detail: "Las claves primarias identifican de forma única cada fila y son necesarias para la integridad de la base de datos."
+        });
+      }
+      const rel = (db.relaciones || []).find(function (r) {
+        const fromP = r.from.split('.'), toP = r.to.split('.');
+        return (fromP[0].toLowerCase() === tname.toLowerCase() && fromP[1].toLowerCase() === col.name.toLowerCase()) ||
+               (toP[0].toLowerCase() === tname.toLowerCase() && toP[1].toLowerCase() === col.name.toLowerCase());
+      });
+      if (rel) {
+        throw new SqlError("No se puede eliminar la columna '" + col.name + "' porque forma parte de una relación (" + rel.from + " \u2192 " + rel.to + ")", {
+          detail: "Integridad referencial: una columna asociada a una clave foránea no puede eliminarse mientras exista la relación."
+        });
+      }
+
+      sch.splice(colIdx, 1);
+      (db.tables[tname] || []).forEach(function (row) { delete row[col.name]; });
+      return {
+        type: 'ddl',
+        kind: 'alter_table',
+        table: tname,
+        tables: [tname],
+        message: "Columna '" + col.name + "' eliminada de la tabla '" + tname + "'"
+      };
+    }
+
+    throw new SqlError("Acción no admitida en ALTER TABLE", { detail: "El simulador soporta ADD COLUMN y DROP COLUMN." });
+  }
+
+  function execDropTable(db, st) {
+    let tname;
+    try {
+      tname = resolveTable(db, st.table, st.line);
+    } catch (err) {
+      if (st.ifExists) {
+        return { type: 'ddl', kind: 'drop_table', table: st.table, tables: [], message: "La tabla '" + st.table + "' no existía" };
+      }
+      throw err;
+    }
+
+    // Comprobar si otras tablas tienen claves foráneas hacia tname
+    const referencing = (db.relaciones || []).filter(function (r) {
+      const fromTable = r.from.split('.')[0].toLowerCase();
+      const toTable = r.to.split('.')[0].toLowerCase();
+      return toTable === tname.toLowerCase() && fromTable !== tname.toLowerCase();
+    });
+
+    if (referencing.length > 0) {
+      const names = Array.from(new Set(referencing.map(function (r) { return r.from.split('.')[0]; }))).join(', ');
+      throw new SqlError("No se puede eliminar la tabla '" + tname + "' porque está referenciada por otra(s) tabla(s): " + names, {
+        detail: "Integridad referencial: no puedes eliminar una tabla padre mientras existan tablas hijas que dependan de ella mediante claves foráneas (FOREIGN KEY).",
+        hint: "Elimina primero las tablas hijas (" + names + ") con DROP TABLE."
+      });
+    }
+
+    delete db.schema[tname];
+    delete db.tables[tname];
+    if (db.userTables) db.userTables.delete(tname);
+
+    if (db.relaciones) {
+      db.relaciones = db.relaciones.filter(function (r) {
+        return r.from.split('.')[0].toLowerCase() !== tname.toLowerCase();
+      });
+    }
+
+    return {
+      type: 'ddl',
+      kind: 'drop_table',
+      table: tname,
+      tables: [tname],
+      message: "Tabla '" + tname + "' eliminada correctamente"
+    };
+  }
+
+  /* ---------- Exportación de base de datos a SQL ---------- */
+  function exportDatabaseToSql(db, onlyUserTables) {
+    let tnames = db.tableNames();
+    if (onlyUserTables && db.userTables && db.userTables.size > 0) {
+      tnames = tnames.filter(function (t) { return db.userTables.has(t); });
+    }
+    if (!tnames.length) {
+      tnames = db.tableNames();
+    }
+
+    const relations = (db.relaciones || []).map(function (r) {
+      const fromP = r.from.split('.'), toP = r.to.split('.');
+      return {
+        fromTable: fromP[0],
+        fromCol: fromP[1],
+        toTable: toP[0],
+        toCol: toP[1]
+      };
+    });
+
+    // Ordenación topológica: padres antes que hijos
+    const ordered = [];
+    const visited = new Set();
+    const tnameSet = new Set(tnames.map(function (t) { return t.toLowerCase(); }));
+
+    function visit(t) {
+      const lower = t.toLowerCase();
+      if (visited.has(lower)) return;
+      visited.add(lower);
+
+      const deps = relations
+        .filter(function (r) { return r.fromTable.toLowerCase() === lower && r.toTable.toLowerCase() !== lower; })
+        .map(function (r) { return r.toTable; });
+
+      deps.forEach(function (dep) {
+        if (tnameSet.has(dep.toLowerCase()) && !visited.has(dep.toLowerCase())) {
+          visit(dep);
+        }
+      });
+      ordered.push(t);
+    }
+
+    tnames.forEach(function (t) { visit(t); });
+
+    let sql = '-- ============================================================\n';
+    sql += '-- Base de datos exportada desde el Simulador tecnoLSM\n';
+    sql += '-- Base de datos: ' + db.nombre + '\n';
+    sql += '-- Fecha: ' + new Date().toISOString().split('T')[0] + '\n';
+    sql += '-- ============================================================\n\n';
+
+    ordered.forEach(function (tname) {
+      const sch = db.schema[tname] || [];
+      const rows = db.tables[tname] || [];
+      const tRels = relations.filter(function (r) { return r.fromTable.toLowerCase() === tname.toLowerCase(); });
+
+      sql += '-- ------------------------------------------------------------\n';
+      sql += '-- Estructura y datos de la tabla `' + tname + '`\n';
+      sql += '-- ------------------------------------------------------------\n';
+      sql += 'CREATE TABLE ' + tname + ' (\n';
+
+      const lines = [];
+      sch.forEach(function (col) {
+        let line = '  ' + col.name + ' ' + (col.type || 'TEXT');
+        if (col.pk) line += ' PRIMARY KEY';
+        if (col.notNull) line += ' NOT NULL';
+        lines.push(line);
+      });
+
+      tRels.forEach(function (rel) {
+        lines.push('  FOREIGN KEY (' + rel.fromCol + ') REFERENCES ' + rel.toTable + '(' + rel.toCol + ')');
+      });
+
+      sql += lines.join(',\n') + '\n);\n\n';
+
+      if (rows.length > 0) {
+        rows.forEach(function (row) {
+          const vals = sch.map(function (col) {
+            const v = row[col.name];
+            if (v === null || v === undefined) return 'NULL';
+            if (typeof v === 'number') return String(v);
+            if (typeof v === 'boolean') return v ? 'TRUE' : 'FALSE';
+            return "'" + String(v).replace(/'/g, "''") + "'";
+          });
+          sql += 'INSERT INTO ' + tname + ' (' + sch.map(function (c) { return c.name; }).join(', ') + ') VALUES (' + vals.join(', ') + ');\n';
+        });
+        sql += '\n';
+      }
+    });
+
+    return sql;
   }
 
   /* ---------- API pública ---------- */
@@ -1202,7 +1817,13 @@
         res = { type: 'select', columns: r.columns, rows: r.rows, tables: Array.from(parser.tables) };
       } else if (st.type === 'insert') res = execInsert(db, st);
       else if (st.type === 'update') res = execUpdate(db, st);
-      else res = execDelete(db, st);
+      else if (st.type === 'delete') res = execDelete(db, st);
+      else if (st.type === 'create_table') res = execCreateTable(db, st);
+      else if (st.type === 'alter_table') res = execAlterTable(db, st);
+      else if (st.type === 'drop_table') res = execDropTable(db, st);
+    }
+    if (stmts.length > 1 && res.type !== 'select') {
+      res.message = 'Se han ejecutado ' + stmts.length + ' sentencias correctamente (' + res.message + ')';
     }
     res.statements = stmts.length;
     res.ms = now() - t0;
@@ -1237,6 +1858,7 @@
     run: run,
     compareResults: compareResults,
     tokenize: tokenize,
+    exportDatabaseToSql: exportDatabaseToSql,
     KEYWORDS: Array.from(KEYWORDS),
     FUNCTIONS: Array.from(AGG).concat(SCALAR_FUNCS)
   };
