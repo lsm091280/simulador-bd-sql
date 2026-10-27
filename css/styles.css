@@ -412,3 +412,9 @@ pre.editor-layer code { font: inherit; background: none; border: 0; padding: 0; 
 /* ---------- Hover en botones secundarios ---------- */
 .btn-secondary:hover { border-color: var(--magenta); color: var(--magenta); }
 .btn-secondary:focus-visible { outline-color: var(--magenta); }
+
+/* ---------- Logo real tecnoLSM ---------- */
+.brand-logo {
+  width: 48px; height: 48px; border-radius: 8px;
+  object-fit: cover; flex-shrink: 0;
+}
