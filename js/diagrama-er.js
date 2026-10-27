@@ -145,6 +145,8 @@
     body.className = 'er-modal-body';
 
     var svg = buildSvg(db, highlight);
+    svg.setAttribute('width', svg.viewBox.baseVal.width * 2);
+    svg.setAttribute('height', svg.viewBox.baseVal.height * 2);
     body.appendChild(svg);
 
     modal.appendChild(closeBtn);
