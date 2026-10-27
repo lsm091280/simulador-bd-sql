@@ -156,6 +156,9 @@
       renderEjemplos();
       renderExamList();
       resetExamView();
+      // Aviso de BD activa en pestaña Crear BD
+      var aviso = $('bd-activa-aviso');
+      if (aviso) aviso.textContent = 'BD activa: «' + esc(BDS[key].label) + '». Las tablas que crees (CREATE TABLE) se añadirán a esta BD.';
       if (!el.input.value.trim()) {
         var first = (window.EJEMPLOS[key] || [])[0];
         if (first) setEditor(first.sql);
