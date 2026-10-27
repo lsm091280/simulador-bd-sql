@@ -233,6 +233,24 @@ pre.editor-layer code { font: inherit; background: none; border: 0; padding: 0; 
 
 .er-container { overflow-x: auto; }
 .er-svg { width: 100%; height: auto; min-width: 300px; display: block; }
+.er-controls {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 8px; padding: 4px 8px;
+  background: var(--surface-2); border: 1px solid var(--rule);
+  border-radius: var(--r-s); width: fit-content;
+}
+.er-zoom-btn {
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--ink); border-radius: 4px; padding: 2px 8px;
+  font: 600 14px/1 var(--font-mono); cursor: pointer;
+  transition: background .15s;
+}
+.er-zoom-btn:hover { background: var(--accent); color: var(--on-accent); }
+.er-zoom-label {
+  font: 600 12px/1 var(--font-mono); color: var(--muted);
+  min-width: 36px; text-align: center;
+}
+.er-wrap { position: relative; }
 .er-box { fill: var(--surface-2); stroke: var(--border); stroke-width: 1; }
 .er-sep { stroke: var(--border); stroke-width: 1; fill: none; }
 .er-title { font: 700 14px var(--font-mono); fill: var(--ink); }

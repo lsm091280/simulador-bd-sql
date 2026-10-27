@@ -1,6 +1,7 @@
 /* ============================================================
    tecnoLSM · Simulador de bases de datos
    Diagrama ER simple en SVG (cajas por tabla + líneas de relación).
+   Incluye zoom in / zoom out / reset para ver bien diagramas grandes.
    Los colores salen de variables CSS (.er-*) para respetar el tema.
    ============================================================ */
 (function (global) {
@@ -19,6 +20,44 @@
   function parseRef(ref) {
     var p = String(ref).split('.');
     return { table: p[0], col: p[1] };
+  }
+
+  var zoomLevel = 1;
+  var ZOOM_MIN = 0.4, ZOOM_MAX = 3, ZOOM_STEP = 0.25;
+
+  function applyZoom(container) {
+    var svg = container.querySelector('.er-svg');
+    if (!svg) return;
+    svg.style.transform = 'scale(' + zoomLevel + ')';
+    svg.style.transformOrigin = 'top left';
+    var wrap = container.querySelector('.er-wrap');
+    if (wrap) {
+      wrap.style.width = (zoomLevel * 100) + '%';
+      wrap.style.height = (zoomLevel * 100) + '%';
+    }
+  }
+
+  function zoomIn(container) {
+    zoomLevel = Math.min(ZOOM_MAX, zoomLevel + ZOOM_STEP);
+    applyZoom(container);
+    updateZoomLabel(container);
+  }
+
+  function zoomOut(container) {
+    zoomLevel = Math.max(ZOOM_MIN, zoomLevel - ZOOM_STEP);
+    applyZoom(container);
+    updateZoomLabel(container);
+  }
+
+  function resetZoom(container) {
+    zoomLevel = 1;
+    applyZoom(container);
+    updateZoomLabel(container);
+  }
+
+  function updateZoomLabel(container) {
+    var label = container.querySelector('.er-zoom-label');
+    if (label) label.textContent = Math.round(zoomLevel * 100) + '%';
   }
 
   /**
@@ -54,6 +93,45 @@
     var cols = Math.min(PER_ROW, names.length);
     var width = PAD * 2 + 48 + cols * BOX_W + (cols - 1) * GAP_X;
     var height = acc - GAP_Y + PAD;
+
+    /* Controles de zoom (DOM seguro, sin innerHTML) */
+    var controls = document.createElement('div');
+    controls.className = 'er-controls';
+
+    var btnOut = document.createElement('button');
+    btnOut.type = 'button';
+    btnOut.className = 'er-zoom-btn';
+    btnOut.setAttribute('data-action', 'out');
+    btnOut.title = 'Alejar';
+    btnOut.textContent = '−';
+
+    var label = document.createElement('span');
+    label.className = 'er-zoom-label';
+    label.textContent = '100%';
+
+    var btnIn = document.createElement('button');
+    btnIn.type = 'button';
+    btnIn.className = 'er-zoom-btn';
+    btnIn.setAttribute('data-action', 'in');
+    btnIn.title = 'Acercar';
+    btnIn.textContent = '+';
+
+    var btnReset = document.createElement('button');
+    btnReset.type = 'button';
+    btnReset.className = 'er-zoom-btn';
+    btnReset.setAttribute('data-action', 'reset');
+    btnReset.title = 'Tamaño original';
+    btnReset.textContent = '↺';
+
+    controls.appendChild(btnOut);
+    controls.appendChild(label);
+    controls.appendChild(btnIn);
+    controls.appendChild(btnReset);
+
+    var wrap = document.createElement('div');
+    wrap.className = 'er-wrap';
+    wrap.style.overflow = 'auto';
+    wrap.style.maxHeight = '420px';
 
     var svg = el('svg', {
       viewBox: '0 0 ' + width + ' ' + height,
@@ -120,8 +198,24 @@
       svg.appendChild(g);
     });
 
-    container.appendChild(svg);
+    wrap.appendChild(svg);
+    container.appendChild(controls);
+    container.appendChild(wrap);
+
+    /* Eventos de zoom */
+    controls.addEventListener('click', function (e) {
+      var btn = e.target.closest('.er-zoom-btn');
+      if (!btn) return;
+      var action = btn.getAttribute('data-action');
+      if (action === 'in') zoomIn(container);
+      else if (action === 'out') zoomOut(container);
+      else if (action === 'reset') resetZoom(container);
+    });
+
+    /* Reset zoom al renderizar */
+    zoomLevel = 1;
+    updateZoomLabel(container);
   }
 
-  global.DiagramaER = { render: render };
+  global.DiagramaER = { render: render, zoomIn: zoomIn, zoomOut: zoomOut, resetZoom: resetZoom };
 })(window);
