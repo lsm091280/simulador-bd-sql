@@ -418,3 +418,10 @@ pre.editor-layer code { font: inherit; background: none; border: 0; padding: 0; 
   width: 48px; height: 48px; border-radius: 8px;
   object-fit: cover; flex-shrink: 0;
 }
+
+/* ---------- Footer wordmark (como OhmLab) ---------- */
+.footer-wordmark {
+  font: 600 22px/1 var(--font-mono); color: var(--ink);
+  letter-spacing: -.01em; margin-bottom: 8px;
+}
+.footer-wordmark b { color: var(--accent); font-weight: 600; }
