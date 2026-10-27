@@ -1,7 +1,7 @@
 /* ============================================================
    tecnoLSM · Simulador de bases de datos
    Diagrama ER simple en SVG (cajas por tabla + líneas de relación).
-   Incluye zoom in / zoom out / reset para ver bien diagramas grandes.
+   Incluye botón "Ampliar" que abre el diagrama en un modal centrado.
    Los colores salen de variables CSS (.er-*) para respetar el tema.
    ============================================================ */
 (function (global) {
@@ -22,53 +22,9 @@
     return { table: p[0], col: p[1] };
   }
 
-  var zoomLevel = 1;
-  var ZOOM_MIN = 0.4, ZOOM_MAX = 3, ZOOM_STEP = 0.25;
-
-  function applyZoom(container) {
-    var svg = container.querySelector('.er-svg');
-    if (!svg) return;
-    svg.style.transform = 'scale(' + zoomLevel + ')';
-    svg.style.transformOrigin = 'top left';
-    var wrap = container.querySelector('.er-wrap');
-    if (wrap) {
-      wrap.style.width = (zoomLevel * 100) + '%';
-      wrap.style.height = (zoomLevel * 100) + '%';
-    }
-  }
-
-  function zoomIn(container) {
-    zoomLevel = Math.min(ZOOM_MAX, zoomLevel + ZOOM_STEP);
-    applyZoom(container);
-    updateZoomLabel(container);
-  }
-
-  function zoomOut(container) {
-    zoomLevel = Math.max(ZOOM_MIN, zoomLevel - ZOOM_STEP);
-    applyZoom(container);
-    updateZoomLabel(container);
-  }
-
-  function resetZoom(container) {
-    zoomLevel = 1;
-    applyZoom(container);
-    updateZoomLabel(container);
-  }
-
-  function updateZoomLabel(container) {
-    var label = container.querySelector('.er-zoom-label');
-    if (label) label.textContent = Math.round(zoomLevel * 100) + '%';
-  }
-
-  /**
-   * Dibuja el diagrama dentro de `container`.
-   * @param {HTMLElement} container
-   * @param {object} db base de datos creada con SqlEngine.createDatabase
-   * @param {string[]} highlight nombres de tablas a resaltar
-   */
-  function render(container, db, highlight) {
+  /** Construye el SVG del diagrama y lo devuelve. */
+  function buildSvg(db, highlight) {
     highlight = (highlight || []).map(function (t) { return t.toLowerCase(); });
-    container.textContent = '';
     var names = db.tableNames();
     var rels = (db.relaciones || []).map(function (r) { return { from: parseRef(r.from), to: parseRef(r.to) }; });
 
@@ -94,45 +50,6 @@
     var width = PAD * 2 + 48 + cols * BOX_W + (cols - 1) * GAP_X;
     var height = acc - GAP_Y + PAD;
 
-    /* Controles de zoom (DOM seguro, sin innerHTML) */
-    var controls = document.createElement('div');
-    controls.className = 'er-controls';
-
-    var btnOut = document.createElement('button');
-    btnOut.type = 'button';
-    btnOut.className = 'er-zoom-btn';
-    btnOut.setAttribute('data-action', 'out');
-    btnOut.title = 'Alejar';
-    btnOut.textContent = '−';
-
-    var label = document.createElement('span');
-    label.className = 'er-zoom-label';
-    label.textContent = '100%';
-
-    var btnIn = document.createElement('button');
-    btnIn.type = 'button';
-    btnIn.className = 'er-zoom-btn';
-    btnIn.setAttribute('data-action', 'in');
-    btnIn.title = 'Acercar';
-    btnIn.textContent = '+';
-
-    var btnReset = document.createElement('button');
-    btnReset.type = 'button';
-    btnReset.className = 'er-zoom-btn';
-    btnReset.setAttribute('data-action', 'reset');
-    btnReset.title = 'Tamaño original';
-    btnReset.textContent = '↺';
-
-    controls.appendChild(btnOut);
-    controls.appendChild(label);
-    controls.appendChild(btnIn);
-    controls.appendChild(btnReset);
-
-    var wrap = document.createElement('div');
-    wrap.className = 'er-wrap';
-    wrap.style.overflow = 'auto';
-    wrap.style.maxHeight = '420px';
-
     var svg = el('svg', {
       viewBox: '0 0 ' + width + ' ' + height,
       class: 'er-svg',
@@ -146,7 +63,7 @@
       return pos[t].y + HEAD_H + idx * ROW_H + ROW_H / 2;
     }
 
-    /* Líneas de relación (debajo de las cajas) */
+    /* Líneas de relación */
     var gLines = el('g', { class: 'er-lines' });
     rels.forEach(function (r) {
       if (!pos[r.from.table] || !pos[r.to.table]) return;
@@ -198,24 +115,87 @@
       svg.appendChild(g);
     });
 
-    wrap.appendChild(svg);
-    container.appendChild(controls);
-    container.appendChild(wrap);
-
-    /* Eventos de zoom */
-    controls.addEventListener('click', function (e) {
-      var btn = e.target.closest('.er-zoom-btn');
-      if (!btn) return;
-      var action = btn.getAttribute('data-action');
-      if (action === 'in') zoomIn(container);
-      else if (action === 'out') zoomOut(container);
-      else if (action === 'reset') resetZoom(container);
-    });
-
-    /* Reset zoom al renderizar */
-    zoomLevel = 1;
-    updateZoomLabel(container);
+    return svg;
   }
 
-  global.DiagramaER = { render: render, zoomIn: zoomIn, zoomOut: zoomOut, resetZoom: resetZoom };
+  /** Abre un modal centrado con el diagrama a tamaño grande. */
+  function openModal(db, highlight) {
+    var old = document.getElementById('er-modal');
+    if (old) old.parentNode.removeChild(old);
+
+    var overlay = document.createElement('div');
+    overlay.id = 'er-modal';
+    overlay.className = 'er-modal-overlay';
+
+    var modal = document.createElement('div');
+    modal.className = 'er-modal';
+
+    var closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'er-modal-close';
+    closeBtn.textContent = '✕';
+    closeBtn.title = 'Cerrar';
+    closeBtn.addEventListener('click', closeModal);
+
+    var title = document.createElement('h3');
+    title.className = 'er-modal-title';
+    title.textContent = 'Diagrama ER — ' + db.nombre;
+
+    var body = document.createElement('div');
+    body.className = 'er-modal-body';
+
+    var svg = buildSvg(db, highlight);
+    svg.classList.add('er-svg-modal');
+    body.appendChild(svg);
+
+    modal.appendChild(closeBtn);
+    modal.appendChild(title);
+    modal.appendChild(body);
+    overlay.appendChild(modal);
+
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) closeModal();
+    });
+
+    function onKey(e) {
+      if (e.key === 'Escape') { closeModal(); document.removeEventListener('keydown', onKey); }
+    }
+    document.addEventListener('keydown', onKey);
+
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    var overlay = document.getElementById('er-modal');
+    if (overlay) overlay.parentNode.removeChild(overlay);
+    document.body.style.overflow = '';
+  }
+
+  /**
+   * Dibuja el diagrama dentro de `container`.
+   */
+  function render(container, db, highlight) {
+    container.textContent = '';
+
+    var btnExpand = document.createElement('button');
+    btnExpand.type = 'button';
+    btnExpand.className = 'er-expand-btn';
+    btnExpand.textContent = 'Ampliar diagrama';
+    btnExpand.title = 'Ver el diagrama a tamaño completo';
+    btnExpand.addEventListener('click', function () { openModal(db, highlight); });
+
+    var wrap = document.createElement('div');
+    wrap.className = 'er-wrap';
+    wrap.style.overflow = 'auto';
+    wrap.style.maxHeight = '320px';
+
+    var svg = buildSvg(db, highlight);
+    wrap.appendChild(svg);
+
+    container.appendChild(btnExpand);
+    container.appendChild(wrap);
+  }
+
+  global.DiagramaER = { render: render, openModal: openModal, closeModal: closeModal };
 })(window);

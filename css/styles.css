@@ -233,24 +233,47 @@ pre.editor-layer code { font: inherit; background: none; border: 0; padding: 0; 
 
 .er-container { overflow-x: auto; }
 .er-svg { width: 100%; height: auto; min-width: 300px; display: block; }
-.er-controls {
-  display: flex; align-items: center; gap: 6px;
-  margin-bottom: 8px; padding: 4px 8px;
-  background: var(--surface-2); border: 1px solid var(--rule);
-  border-radius: var(--r-s); width: fit-content;
+/* ---------- Diagrama ER: modal ampliado ---------- */
+.er-expand-btn {
+  background: var(--accent); color: var(--on-accent);
+  border: none; border-radius: var(--r-s);
+  padding: 6px 14px; font: 600 13px/1 var(--font-body);
+  cursor: pointer; margin-bottom: 8px;
+  transition: opacity .15s;
 }
-.er-zoom-btn {
+.er-expand-btn:hover { opacity: .85; }
+
+.er-modal-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0, 0, 0, .75);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.er-modal {
+  position: relative;
   background: var(--surface); border: 1px solid var(--border);
-  color: var(--ink); border-radius: 4px; padding: 2px 8px;
-  font: 600 14px/1 var(--font-mono); cursor: pointer;
-  transition: background .15s;
+  border-radius: var(--r-m);
+  max-width: 90vw; max-height: 90vh;
+  overflow: auto; padding: 24px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
 }
-.er-zoom-btn:hover { background: var(--accent); color: var(--on-accent); }
-.er-zoom-label {
-  font: 600 12px/1 var(--font-mono); color: var(--muted);
-  min-width: 36px; text-align: center;
+.er-modal-close {
+  position: absolute; top: 12px; right: 12px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--ink); border-radius: 50%;
+  width: 32px; height: 32px; font: 600 16px/1 var(--font-body);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
 }
-.er-wrap { position: relative; }
+.er-modal-close:hover { background: var(--danger); color: var(--on-accent); }
+.er-modal-title {
+  font: 600 18px/1 var(--font-display); color: var(--ink);
+  margin-bottom: 16px; padding-right: 40px;
+}
+.er-modal-body { overflow: auto; }
+.er-svg-modal { width: 100%; height: auto; min-width: 600px; display: block; }
+
+.er-wrap { position: relative; overflow-x: auto; }
+.er-svg { width: 100%; height: auto; min-width: 300px; display: block; }
 .er-box { fill: var(--surface-2); stroke: var(--border); stroke-width: 1; }
 .er-sep { stroke: var(--border); stroke-width: 1; fill: none; }
 .er-title { font: 700 14px var(--font-mono); fill: var(--ink); }
