@@ -253,7 +253,7 @@ pre.editor-layer code { font: inherit; background: none; border: 0; padding: 0; 
   position: relative;
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--r-m);
-  max-width: 90vw; max-height: 90vh;
+  max-width: 95vw; max-height: 95vh;
   overflow: auto; padding: 24px;
   box-shadow: 0 8px 32px rgba(0,0,0,.4);
 }
