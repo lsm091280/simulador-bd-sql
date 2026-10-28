@@ -425,3 +425,78 @@ pre.editor-layer code { font: inherit; background: none; border: 0; padding: 0; 
   letter-spacing: -.01em; margin-bottom: 8px;
 }
 .footer-wordmark b { color: var(--accent); font-weight: 600; }
+
+/* ============================================================
+   COLOR POR FUNCIÓN (28/10/2026)
+   cian = interacción y consulta · cobre = estructura y oficio
+   magenta = evaluación y énfasis · verde = éxito · ámbar = aviso
+   Cada tarjeta, pestaña y bloque del panel lleva el color de su zona,
+   no un color decorativo suelto.
+   ============================================================ */
+
+/* --- Tarjetas: filete superior del color de su zona --- */
+.card { border-top: 3px solid var(--card-accent, var(--rule)); }
+.editor-card { --card-accent: var(--accent); }
+.results-card { --card-accent: var(--ok); }
+#panel-teoria { --card-accent: var(--copper); }
+#panel-crear { --card-accent: var(--copper); }
+#panel-ejemplos { --card-accent: var(--warn); }
+#panel-examen { --card-accent: var(--magenta); }
+.col-side .card { --card-accent: var(--copper); }
+
+/* --- Títulos de tarjeta con barra de color --- */
+.card-title { display: flex; align-items: center; gap: 8px; }
+.card-title::before {
+  content: ""; flex: none; width: 4px; height: 1.05em; border-radius: 2px;
+  background: var(--card-accent, var(--accent));
+}
+.card-title iconify-icon { color: var(--card-accent, var(--accent)); }
+
+/* --- Pestañas: cada una con el color de su zona --- */
+.tab { --tab: var(--accent); }
+.tab[data-tab="teoria"], .tab[data-tab="crear"] { --tab: var(--copper); }
+.tab[data-tab="ejemplos"] { --tab: var(--warn); }
+.tab[data-tab="examen"] { --tab: var(--magenta); }
+.tab iconify-icon { color: var(--tab); }
+.tab.is-active { color: var(--tab); border-color: var(--tab); background: color-mix(in srgb, var(--tab) 10%, var(--surface)); }
+.tab.is-active iconify-icon { color: var(--tab); }
+
+/* --- Panel lateral: el esquema es "taller", va en cobre --- */
+.bd-nombre { color: var(--copper); }
+.mini-table th { color: var(--copper); }
+.conceptos dt { color: var(--copper); }
+.badge { border-color: var(--magenta); color: var(--magenta); }
+
+/* --- Teoría y ejemplos --- */
+.teoria-card { border-top: 2px solid var(--copper); }
+.teoria-card.teoria-card-alert { border-top-color: var(--warn); }
+.teoria-card h3 iconify-icon { color: var(--warn); }
+.ejemplo { border-left: 3px solid var(--copper); }
+.ejemplo h3 { color: var(--copper); }
+.tabla-card { border-left: 3px solid var(--copper); }
+#tablas-sistema-lista .tabla-card { border-left-color: var(--warn); }
+.plantillas-box { border-left: 3px solid var(--copper); }
+
+/* --- Interacción: el hover de los botones secundarios va en magenta --- */
+@media (hover: hover) {
+  .btn:not(.btn-primary):not(:disabled):hover { border-color: var(--magenta); color: var(--magenta); }
+  .historial button:hover { border-color: var(--magenta); color: var(--magenta); }
+  .table-wrap tbody tr:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+}
+
+/* --- Examen: enunciado y selección en magenta --- */
+.enunciado { border-left: 3px solid var(--magenta); padding-left: 12px; }
+.exam-chip[aria-pressed="true"] { border-color: var(--magenta); color: var(--magenta); }
+.examen-meta iconify-icon { color: var(--copper); }
+.btn-primary iconify-icon { color: var(--on-accent); }
+
+/* --- Resultados: cabecera de tabla en cian, filas alternas suaves --- */
+.table-wrap th { border-bottom: 2px solid var(--accent); }
+.row-count strong { color: var(--copper); }
+
+/* --- Al imprimir se fuerza el tema claro: los acentos también --- */
+@media print {
+  :root, [data-theme="dark"], [data-theme="light"] {
+    --copper: #8A5530; --magenta: #A8307B; --ok: #17754A; --warn: #8A6411; --danger: #B3372B;
+  }
+}
